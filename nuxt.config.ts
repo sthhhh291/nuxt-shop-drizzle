@@ -13,14 +13,33 @@ export default defineNuxtConfig({
     "@sidebase/nuxt-auth",
   ],
   auth: {
-    isEnabled: true,
-    disableServerSideAuth: false,
-    originEnvKey: 'AUTH_ORIGIN',
-    baseURL: 'http://localhost:3000/api/auth',
-    provider: { /* your provider config */ },
-    sessionRefresh: {
-      enablePeriodically: true,
-      enableOnWindowFocus: true,
-    }
-  }
+    globalAppMiddleware: true,
+    baseURL: process.env.NUXT_PUBLIC_API_URL,
+    provider: {
+      type: "local",
+      endpoints: {
+        signIn: { path: "/signin", method: "post" },
+        signOut: { path: "/identity/accounts/logout", method: "get" },
+        signUp: { path: "/register", method: "post" },
+        getSession: { path: "/identity/me", method: "get" },
+      },
+      pages: {
+        login: "/login",
+        logout: "/",
+        home: "/",
+        profile: "/profile",
+        register: "/register",
+      },
+      token: {
+        signInResponseTokenPointer: "/accessToken",
+      },
+      sessionDataType: {},
+    },
+    enableSessionRefreshPeriodically: 5000,
+    enableSessionRefreshOnWindowFocus: true,
+    globalMiddlewareOptions: {
+      allow404WithoutAuth: true, // Defines if the 404 page will be accessible while unauthenticated
+      addDefaultCallbackUrl: "/", // Where authenticated user will be redirected to by default
+    },
+  },
 });
