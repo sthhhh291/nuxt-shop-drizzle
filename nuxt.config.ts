@@ -3,6 +3,10 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
 
+  devServer: {
+    port: 3000,
+  },
+
   modules: [
     "@nuxt/content",
     "@nuxt/eslint",
@@ -13,14 +17,15 @@ export default defineNuxtConfig({
     "@sidebase/nuxt-auth",
   ],
   auth: {
-    isEnabled: true,
-    disableServerSideAuth: false,
-    originEnvKey: 'AUTH_ORIGIN',
-    baseURL: 'http://localhost:3000/api/auth',
-    provider: { /* your provider config */ },
+    baseURL: `${process.env.AUTH_ORIGIN}/api/auth`,
+    provider: {
+      type: "authjs",
+    },
     sessionRefresh: {
-      enablePeriodically: true,
-      enableOnWindowFocus: true,
-    }
-  }
+      enablePeriodically: false,
+      enableOnWindowFocus: false,
+    },
+    globalAppMiddleware: false,
+    disableServerSideAuth: true,
+  },
 });
