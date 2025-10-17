@@ -13,23 +13,23 @@ export default defineNuxtConfig({
     "@sidebase/nuxt-auth",
   ],
   auth: {
-    globalAppMiddleware: true,
+    // globalAppMiddleware: true,
     baseURL: process.env.NUXT_PUBLIC_API_URL,
     provider: {
       type: "local",
-      endpoints: {
-        signIn: { path: "/signin", method: "post" },
-        signOut: { path: "/identity/accounts/logout", method: "get" },
-        signUp: { path: "/register", method: "post" },
-        getSession: { path: "/identity/me", method: "get" },
-      },
-      pages: {
-        login: "/login",
-        logout: "/",
-        home: "/",
-        profile: "/profile",
-        register: "/register",
-      },
+      // endpoints: {
+      //   signIn: { path: "/signin", method: "post" },
+      //   signOut: { path: "/identity/accounts/logout", method: "get" },
+      //   signUp: { path: "/register", method: "post" },
+      //   getSession: { path: "/identity/me", method: "get" },
+      // },
+      // pages: {
+      //   login: "/login",
+      //   logout: "/",
+      //   home: "/",
+      //   profile: "/profile",
+      //   register: "/register",
+      // },
       token: {
         signInResponseTokenPointer: "/accessToken",
       },

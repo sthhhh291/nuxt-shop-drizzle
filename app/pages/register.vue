@@ -20,21 +20,25 @@
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      username: "",
-      email: "",
-      password: "",
-      // errorMessage: ''
-    };
-  },
-  methods: {
-    register() {
-      // Registration logic goes here
-      // Example: console.log(this.username, this.email, this.password);
-    },
-  },
+<script setup lang="ts">
+// Replace 'signUp' with the actual method name provided by useAuth
+const { signUp: registerUser } = useAuth();
+const username = ref("");
+const email = ref("");
+const password = ref("");
+// const errorMessage = ref("");
+const register = async () => {
+  try {
+    const res = await registerUser({
+      username: username.value,
+      email: email.value,
+      password: password.value,
+    });
+    console.log("Registration successful:", res);
+    // Optionally, redirect to login or home page
+  } catch (error) {
+    console.error("Registration failed:", error);
+    // errorMessage.value = "Registration failed. Please try again.";
+  }
 };
 </script>

@@ -15,6 +15,20 @@
       "when": 1760062375433,
       "tag": "0001_cuddly_elektra",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1760588017929,
+      "tag": "0002_yummy_storm",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1760665305590,
+      "tag": "0003_peaceful_justin_hammer",
+      "breakpoints": true
     }
   ]
 }
