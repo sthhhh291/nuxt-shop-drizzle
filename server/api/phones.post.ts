@@ -3,9 +3,9 @@ import { phones } from "../../db/schema";
 import { z } from "zod";
 
 const phoneSchema = z.object({
-  number: z.string().min(10).max(15),
-  type: z.enum(["mobile", "landline"]),
-  userId: z.string().uuid(),
+  phone_number: z.string().min(10).max(15),
+  phone_type: z.enum(["mobile", "landline"]),
+  customer_id: z.number().int(),
 });
 
 export default defineEventHandler(async (event) => {
@@ -18,11 +18,11 @@ export default defineEventHandler(async (event) => {
       return { error: "Invalid request", details: parsedBody.error.format() };
     }
 
-    const { number, type, userId } = parsedBody.data;
+    const { phone_number, phone_type, customer_id } = parsedBody.data;
 
     const [newPhone] = await db
       .insert(phones)
-      .values({ number, type, userId })
+      .values({ phone_number, phone_type, customer_id })
       .returning();
 
     return { message: "Phone created successfully", phone: newPhone };
@@ -34,4 +34,3 @@ export default defineEventHandler(async (event) => {
     return { error: "Method not allowed" };
   }
 });
-phones;
