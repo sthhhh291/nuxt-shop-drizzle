@@ -1,5 +1,5 @@
 import { db } from "../../sqlite-service";
-import { customers } from "../../../db/schema";
+import { cars, customers } from "../../../db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 

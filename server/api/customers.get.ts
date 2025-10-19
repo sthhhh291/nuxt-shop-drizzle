@@ -1,6 +1,5 @@
 import { db } from "../sqlite-service";
-import { customers } from "../../db/schema";
-// import { eq } from "drizzle-orm";
+import { cars, customers, customersRelations } from "../../db/schema";
 import { z } from "zod";
 
 const customerSchema = z.object({
@@ -28,7 +27,20 @@ export default defineEventHandler(async (event) => {
 
     return { message: "Customer created successfully", customer: newCustomer };
   } else if (event.req.method === "GET") {
-    const allCustomers = await db.select().from(customers);
+    // Use the relational query syntax with proper relations
+    const allCustomers = await db.query.customers.findMany({
+      with: {
+        cars: {
+          with: {
+            estimates: { with: { labor: true, parts: true, oil: true } },
+          },
+        }, // This should reference the relation name, not the table
+        phones: true,
+        emails: true,
+        addresses: true,
+      },
+    });
+
     return { customers: allCustomers };
   } else {
     event.res.statusCode = 405; // Method Not Allowed

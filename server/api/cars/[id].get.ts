@@ -1,6 +1,6 @@
 import { db } from "~~/server/sqlite-service";
 import { cars } from "~~/db/schema";
-// import { z } from "zod"; 
+// import { z } from "zod";
 import { eq } from "drizzle-orm";
 
 export default eventHandler(async (event) => {
@@ -12,7 +12,13 @@ export default eventHandler(async (event) => {
       event.res.statusCode = 400;
       return { error: "Invalid car id." };
     }
-    const car = await db.select().from(cars).where(eq(cars.id, carId)).limit(1).then((res) => res[0]);
+    const car = await db.query.cars.findFirst({
+      where: eq(cars.id, carId),
+      with: {
+        customer: { with: { phones: true, emails: true, addresses: true } },
+        estimates: { with: { labor: true, parts: true, oil: true } },
+      },
+    });
 
     if (!car) {
       event.res.statusCode = 404;

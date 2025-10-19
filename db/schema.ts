@@ -1,5 +1,6 @@
 import { integer, sqliteTable, text, real } from "drizzle-orm/sqlite-core";
 import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -136,3 +137,71 @@ export const oil = sqliteTable("oil", {
 
 export type Oil = InferSelectModel<typeof oil>;
 export type InsertOil = InferInsertModel<typeof oil>;
+
+//relations area
+export const customersRelations = relations(customers, ({ many }) => ({
+  phones: many(phones),
+  emails: many(emails),
+  addresses: many(addresses),
+  cars: many(cars),
+}));
+
+export const phonesRelations = relations(phones, ({ one }) => ({
+  customer: one(customers, {
+    fields: [phones.customer_id],
+    references: [customers.id],
+  }),
+}));
+
+export const emailsRelations = relations(emails, ({ one }) => ({
+  customer: one(customers, {
+    fields: [emails.customer_id],
+    references: [customers.id],
+  }),
+}));
+
+export const addressesRelations = relations(addresses, ({ one }) => ({
+  customer: one(customers, {
+    fields: [addresses.customer_id],
+    references: [customers.id],
+  }),
+}));
+
+export const carsRelations = relations(cars, ({ many, one }) => ({
+  customer: one(customers, {
+    fields: [cars.customer_id],
+    references: [customers.id],
+  }),
+  estimates: many(estimates),
+}));
+
+export const estimatesRelations = relations(estimates, ({ many, one }) => ({
+  car: one(cars, {
+    fields: [estimates.car_id],
+    references: [cars.id],
+  }),
+  labor: many(labor),
+  parts: many(parts),
+  oil: many(oil),
+}));
+
+export const laborRelations = relations(labor, ({ one }) => ({
+  estimate: one(estimates, {
+    fields: [labor.estimate_id],
+    references: [estimates.id],
+  }),
+}));
+
+export const partsRelations = relations(parts, ({ one }) => ({
+  estimate: one(estimates, {
+    fields: [parts.estimate_id],
+    references: [estimates.id],
+  }),
+}));
+
+export const oilRelations = relations(oil, ({ one }) => ({
+  estimate: one(estimates, {
+    fields: [oil.estimate_id],
+    references: [estimates.id],
+  }),
+}));
