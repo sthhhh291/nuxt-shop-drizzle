@@ -1,5 +1,5 @@
-import { db } from "../../sqlite-service";
-import { customers } from "../../../db/schema";
+import { db } from "~~/server/sqlite-service";
+import { emails } from "~~/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -17,28 +17,18 @@ export default defineEventHandler(async (event) => {
     return { error: "Invalid ID", details: parsedId.error.format() };
   }
 
-  const customerId = parsedId.data.id;
+  const emailId = parsedId.data.id;
 
   if (event.req.method === "GET") {
-    const customer = await db.query.customers.findFirst({
-      where: eq(customers.id, customerId),
-      with: {
-        phones: true,
-        emails: true,
-        addresses: true,
-        cars: {
-          with: {
-            estimates: { with: { labor: true, parts: true, oil: true } },
-          },
-        },
-      },
+    const email = await db.query.emails.findFirst({
+      where: eq(emails.id, emailId),
     });
-    if (!customer) {
+    if (!email) {
       event.res.statusCode = 404;
-      return { error: "Customer not found" };
+      return { error: "Email not found" };
     }
 
-    return { customer };
+    return { email };
   } else {
     event.res.statusCode = 405; // Method Not Allowed
     return { error: "Method not allowed" };
