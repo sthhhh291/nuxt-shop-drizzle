@@ -129,6 +129,7 @@ export const oil = sqliteTable("oil", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   type: text("type").notNull(),
   quantity: real("quantity").notNull(),
+  cost: real("cost").notNull(),
   price_per_unit: real("price_per_unit").notNull(),
   estimate_id: integer("estimate_id")
     .notNull()

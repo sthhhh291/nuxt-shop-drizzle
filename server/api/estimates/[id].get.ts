@@ -1,7 +1,7 @@
 import { db } from "~~/server/sqlite-service";
 import { estimates, labor, parts, oil } from "~~/db/schema";
 import { z } from "zod";
-import { eq, sql, sum } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const paramsSchema = z.object({
   id: z.string().transform((val) => {
@@ -38,32 +38,55 @@ export default eventHandler(async (event) => {
       return { error: "Estimate not found." };
     }
 
-    const laborTotal = db
+    //totals calculation
+    const totalsResult = await db
       .select({
-        labor_total: sum(labor.price),
+        labor: sql<number>`coalesce(labor_sum.labor, 0)`,
+        parts: sql<number>`coalesce(parts_sum.parts, 0)`,
+        oil: sql<number>`coalesce(oil_sum.oil, 0)`,
+        subtotal: sql<number>`coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)`,
+        tax: sql<number>`round(0.0875 * (coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2)`,
+        shop_fees: sql<number>`
+          case 
+            when (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)) > 500 
+            then 15 
+            else round(0.03 * (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2) 
+          end
+        `,
+        total: sql<number>`
+          coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0) + 
+          round(0.0875 * (coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2) +
+          case 
+            when (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)) > 500 
+            then 15 
+            else round(0.03 * (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2) 
+          end
+        `,
+        cost: sql<number>`coalesce(parts_sum.p_cost, 0) + coalesce(oil_sum.o_cost, 0)`,
+        margin: sql<number>`
+          coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0) + 
+          case 
+            when (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)) > 500 
+            then 15 
+            else round(0.03 * (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2) 
+          end
+          - coalesce(parts_sum.p_cost, 0) - coalesce(oil_sum.o_cost, 0)
+        `,
+        parts_margin: sql<number>`coalesce(parts_sum.parts, 0) - coalesce(parts_sum.p_cost, 0)`,
       })
-      .from(labor)
-      .where(eq(labor.estimate_id, id))
-      .then((res) => res[0].labor_total || 0);
+      .from(
+        sql`(select coalesce(sum(price), 0) as labor from ${labor} where estimate_id = ${id}) as labor_sum`
+      )
+      .crossJoin(
+        sql`(select coalesce(sum(unit_price * quantity), 0) as parts, coalesce(sum(cost * quantity), 0) as p_cost from ${parts} where estimate_id = ${id}) as parts_sum`
+      )
+      .crossJoin(
+        sql`(select coalesce(sum(price_per_unit * quantity), 0) as oil, coalesce(sum(cost * quantity), 0) as o_cost from ${oil} where estimate_id = ${id}) as oil_sum`
+      )
+      // .crossJoin(tax) // add tax table later
+      .get();
 
-    const partsTotal = db
-      .select({
-        parts_total: sum(parts.unit_price),
-      })
-      .from(parts)
-      .where(eq(parts.estimate_id, id))
-      .then((res) => res[0].parts_total || 0);
-
-    const oilTotal = db
-      .select({
-        oil_total: sum(oil.price_per_unit),
-      })
-      .from(oil)
-      .where(eq(oil.estimate_id, id))
-      .then((res) => res[0].oil_total || 0);
-    const totals = { laborTotal, partsTotal, oilTotal };
-
-    return { estimate, totals };
+    return { estimate, totals: totalsResult };
   } catch (error: unknown) {
     event.res.statusCode = 500;
     if (error instanceof Error) {

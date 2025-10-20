@@ -1,0 +1,1 @@
+ALTER TABLE `oil` ADD `cost` real NOT NULL;
