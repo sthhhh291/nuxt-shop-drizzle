@@ -1,22 +1,31 @@
 <script setup lang="ts">
-const { data } = await useFetch("/api/customers", {
-  method: "GET",
-});
+import type { Customer } from "~~/db/schema";
 
-const customers = computed(() => {
-  // Check if 'customers' exists in the response
-  return data.value && "customers" in data.value ? data.value.customers : [];
-});
+defineProps<{
+  customers: Customer[];
+}>();
 </script>
 
 <template>
   <div>
     <h1>Customers</h1>
-    <ul>
-      <li v-for="customer in customers" :key="customer.id">
-        {{ customer.first_name }} {{ customer.last_name }} -
-        {{ customer.notes }}
+    <ul class="space-y-4">
+      <li
+        class="border-b pb-2"
+        v-for="customer in customers"
+        :key="customer.id">
+        {{ customer.first_name }} {{ customer.last_name }}
       </li>
     </ul>
   </div>
 </template>
+
+<style scoped>
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+li {
+  margin-bottom: 10px;
+}
+</style>

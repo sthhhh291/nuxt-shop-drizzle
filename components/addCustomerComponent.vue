@@ -6,16 +6,17 @@ const last_name = ref("");
 const notes = ref("");
 
 const customerSchema = z.object({
-  //   id: z.string().uuid(),
   first_name: z.string().min(2).max(100),
   last_name: z.string().min(2).max(100),
   notes: z.string().max(500).optional(),
 });
 
+const emit = defineEmits(["customerAdded"]);
+const refreshCustomers = inject("refreshCustomers");
+
 const addCustomer = async () => {
   try {
     const newCustomer = customerSchema.parse({
-      //    id: crypto.randomUUID(),
       first_name: first_name.value,
       last_name: last_name.value,
       notes: notes.value,
@@ -26,7 +27,8 @@ const addCustomer = async () => {
       body: newCustomer,
     });
 
-    console.log("Customer added:", response);
+    emit("customerAdded");
+
     // Optionally, reset the form fields
     first_name.value = "";
     last_name.value = "";
@@ -57,3 +59,32 @@ const addCustomer = async () => {
     </form>
   </div>
 </template>
+
+<style scoped>
+form {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+label {
+  font-weight: bold;
+}
+input,
+textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+button {
+  width: 150px;
+  padding: 0.5rem;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+</style>
