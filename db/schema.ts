@@ -206,3 +206,34 @@ export const oilRelations = relations(oil, ({ one }) => ({
     references: [estimates.id],
   }),
 }));
+
+export type customerWithRelations = Customer & {
+  phones: Phone[];
+  emails: Email[];
+  addresses: Address[];
+  cars: (Car & {
+    estimates: (Estimate & { labor: Labor[]; parts: Part[]; oil: Oil[] })[];
+  })[];
+};
+
+export type carWithRelations = Car & {
+  customer: Customer & {
+    phones: Phone[];
+    emails: Email[];
+    addresses: Address[];
+  };
+  estimates: (Estimate & { labor: Labor[]; parts: Part[]; oil: Oil[] })[];
+};
+
+export type estimateWithRelations = Estimate & {
+  car: Car & {
+    customer: Customer & {
+      phones: Phone[];
+      emails: Email[];
+      addresses: Address[];
+    };
+  };
+  labor: Labor[];
+  parts: Part[];
+  oil: Oil[];
+};

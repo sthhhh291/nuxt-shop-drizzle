@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import customersComponent from "../../components/customersComponent.vue";
-import addCustomerComponent from "../../components/addCustomerComponent.vue";
-
 const { data, refresh } = await useFetch("/api/customers", {
   method: "GET",
 });

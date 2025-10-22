@@ -11,10 +11,13 @@ defineProps<{
     <h1>Customers</h1>
     <ul class="space-y-4">
       <li
-        class="border-b pb-2"
         v-for="customer in customers"
-        :key="customer.id">
-        {{ customer.first_name }} {{ customer.last_name }}
+        :key="customer.id"
+        class="border-b pb-2"
+      >
+        <nuxt-link :to="`/customers/${customer.id}`">
+          {{ customer.first_name }} {{ customer.last_name }}
+        </nuxt-link>
       </li>
     </ul>
   </div>
@@ -27,5 +30,12 @@ ul {
 }
 li {
   margin-bottom: 10px;
+}
+a {
+  text-decoration: none;
+  color: #3490dc;
+}
+a:hover {
+  text-decoration: underline;
 }
 </style>
