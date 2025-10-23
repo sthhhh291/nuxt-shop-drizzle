@@ -9,7 +9,10 @@ defineProps<{
   <div class="car-card">
     <div class="">
       <h3>Car</h3>
-      <p>{{ car.make }} {{ car.model }} ({{ car.year }})</p>
+      <p>
+        {{ car.year }} {{ car.make }} {{ car.model }} {{ car.vin }}
+        {{ car.license }} {{ car.fleet }}</p
+      >
     </div>
   </div>
 </template>

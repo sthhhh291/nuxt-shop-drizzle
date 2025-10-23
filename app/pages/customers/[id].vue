@@ -6,17 +6,29 @@ const { data } = await useFetch(`/api/customers/${route.params.id}`, {
   method: "GET",
 });
 const customer = computed(() => {
-  return data.value && "customer" in data.value
-    ? (data.value.customer as customerWithRelations)
+  return data.value && "customer" in data.value ?
+      (data.value.customer as customerWithRelations)
     : null;
 });
 </script>
 <template>
   <div>
     <customerCardComponent v-if="customer" :customer="customer" />
+    <div id="buttons">
+      <!-- placeholder for action buttons -->
+      <button>Edit Customer</button><button>Delete Customer</button>
+      <button>Add Phone Number</button>
+      <button>Add Email</button>
+      <button>Add Address</button>
+      <button>Add Car</button>
+    </div>
     <div class="">
       <h2>Cars</h2>
-      <carCardComponent v-for="car in customer.cars" :key="car.id" :car="car" />
+      <carCardComponent
+        v-if="customer && customer.cars"
+        v-for="car in customer.cars"
+        :key="car.id"
+        :car="{ ...car, customer: customer }" />
     </div>
   </div>
 </template>
@@ -40,5 +52,15 @@ ul {
 }
 li {
   margin-bottom: 0.5em;
+}
+button {
+  margin-right: 1rem;
+  padding: 4px;
+  background-color: rgb(118, 150, 117);
+  color: white;
+  border-radius: 2%;
+}
+button:hover {
+  background-color: rgb(127, 127, 199);
 }
 </style>

@@ -57,6 +57,13 @@
       "when": 1760992834360,
       "tag": "0007_overjoyed_crystal",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1761176710303,
+      "tag": "0008_flippant_satana",
+      "breakpoints": true
     }
   ]
 }

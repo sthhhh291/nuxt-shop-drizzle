@@ -66,6 +66,7 @@ export const cars = sqliteTable("cars", {
   make: text("make").notNull(),
   model: text("model").notNull(),
   year: integer("year").notNull(),
+  engine: text("engine"),
   vin: text("vin"),
   license: text("license"),
   fleet: text("fleet"),
