@@ -12,11 +12,9 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const address = await db
-    .select()
-    .from(addresses)
-    .where(eq(addresses.id, Number(id)))
-    .get();
+  const address = await db.query.addresses.findFirst({
+    where: eq(addresses.id, Number(id)),
+  });
 
   if (!address) {
     throw createError({

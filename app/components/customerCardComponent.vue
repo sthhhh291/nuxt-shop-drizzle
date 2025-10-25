@@ -22,6 +22,9 @@ const router = useRouter();
       <div v-for="add in customer.addresses" :key="add.id">
         <p>
           {{ add.street }}, {{ add.city }}, {{ add.state }} {{ add.zip_code }}
+          <button @click="router.push(`/addresses/edit/${add.id}`)"
+            >Edit</button
+          >
         </p>
       </div>
     </div>
