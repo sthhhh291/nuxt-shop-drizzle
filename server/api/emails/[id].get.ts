@@ -28,9 +28,7 @@ export default defineEventHandler(async (event) => {
       return { error: "Email not found" };
     }
 
-    return { email };
+    return email;
   } else {
-    event.res.statusCode = 405; // Method Not Allowed
-    return { error: "Method not allowed" };
   }
 });

@@ -42,7 +42,12 @@ const router = useRouter();
     <div class="">
       <h3>Emails</h3>
       <div v-for="email in customer.emails" :key="email.id">
-        <p>{{ email.email_address }} ({{ email.email_type }})</p>
+        <p
+          >{{ email.email_address }} ({{ email.email_type }})
+          <button @click="router.push(`/emails/edit/${email.id}`)"
+            >Edit</button
+          ></p
+        >
       </div>
     </div>
   </div>
