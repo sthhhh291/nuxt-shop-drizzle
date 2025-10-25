@@ -1,20 +1,21 @@
 <script setup lang="ts">
-// import customerCardComponent from "~~/components/customerCardComponent.vue";
+// import { form } from "#build/ui";
 import type { customerWithRelations } from "~~/db/schema";
+const showForm = ref(false);
 const route = useRoute();
 const { data } = await useFetch(`/api/customers/${route.params.id}`, {
   method: "GET",
 });
 const customer = computed(() => {
-  return data.value && "customer" in data.value ?
-      (data.value.customer as customerWithRelations)
+  return data.value && "customer" in data.value
+    ? (data.value.customer as customerWithRelations)
     : null;
 });
 </script>
 <template>
   <div>
     <customerCardComponent v-if="customer" :customer="customer" />
-    <div id="buttons">
+    <div v-if="!showForm" id="buttons">
       <!-- placeholder for action buttons -->
       <button>Edit Customer</button><button>Delete Customer</button>
       <button>Add Phone Number</button>
@@ -28,7 +29,8 @@ const customer = computed(() => {
         v-if="customer && customer.cars"
         v-for="car in customer.cars"
         :key="car.id"
-        :car="{ ...car, customer: customer }" />
+        :car="{ ...car, customer: customer }"
+      />
     </div>
   </div>
 </template>

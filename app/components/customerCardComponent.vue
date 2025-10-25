@@ -3,13 +3,19 @@ import type { customerWithRelations } from "~~/db/schema";
 defineProps<{
   customer: customerWithRelations;
 }>();
+const router = useRouter();
 </script>
 
 <template>
   <div class="customer-card">
     <div class="">
       <h3>Customer</h3>
-      <p>{{ customer.first_name }} {{ customer.last_name }}</p>
+      <p>
+        {{ customer.first_name }} {{ customer.last_name }}
+        <button @click="router.push(`/customers/edit/${customer.id}`)">
+          Edit
+        </button>
+      </p>
     </div>
     <div class="">
       <h3>Address</h3>
@@ -43,5 +49,15 @@ defineProps<{
   padding: 1em;
   margin-bottom: 1em;
   border-radius: 5px;
+}
+button {
+  margin-left: 1em;
+  color: #ffffff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  background-color: rgb(119, 180, 117);
+  padding: 0.2em 0.5em;
+  border-radius: 3px;
 }
 </style>
