@@ -28,7 +28,12 @@ const router = useRouter();
     <div class="">
       <h3>Phones</h3>
       <div v-for="phone in customer.phones" :key="phone.id">
-        <p>{{ phone.phone_number }} ({{ phone.phone_type }})</p>
+        <p
+          >{{ phone.phone_number }} ({{ phone.phone_type }})
+          <button @click="router.push(`/phones/edit/${phone.id}`)"
+            >Edit
+          </button></p
+        >
       </div>
     </div>
     <div class="">
