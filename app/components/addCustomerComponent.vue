@@ -45,17 +45,17 @@ const addCustomer = async () => {
     <form @submit.prevent="addCustomer">
       <div>
         <label for="first_name">First Name:</label>
-        <input id="first_name" v-model="first_name" required />
+        <Input id="first_name" v-model="first_name" required />
       </div>
       <div>
         <label for="last_name">Last Name:</label>
-        <input id="last_name" v-model="last_name" required />
+        <Input id="last_name" v-model="last_name" required />
       </div>
       <div>
         <label for="notes">Notes:</label>
-        <textarea id="notes" v-model="notes" />
+        <Input id="notes" v-model="notes" />
       </div>
-      <button type="submit">Add Customer</button>
+      <Button type="submit">Add Customer</Button>
     </form>
   </div>
 </template>
@@ -78,7 +78,7 @@ textarea {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-button {
+/* button {
   width: 150px;
   padding: 0.5rem;
   background-color: #4caf50;
@@ -86,5 +86,5 @@ button {
   border: none;
   border-radius: 4px;
   cursor: pointer;
-}
+} */
 </style>

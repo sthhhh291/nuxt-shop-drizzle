@@ -47,29 +47,29 @@ const addAddress = async () => {
         <h2>Add Address for Customer ID: {{ id }}</h2>
         <div>
           <label for="street">Street:</label>
-          <input id="street" v-model="address.street" required />
+          <Input id="street" v-model="address.street" required />
         </div>
         <div>
           <label for="city">City:</label>
-          <input id="city" v-model="address.city" required />
+          <Input id="city" v-model="address.city" required />
         </div>
         <div>
           <label for="state">State:</label>
-          <input id="state" v-model="address.state" required />
+          <Input id="state" v-model="address.state" required />
         </div>
         <div>
           <label for="zip_code">Zip Code:</label>
-          <input id="zip_code" v-model="address.zip_code" required />
+          <Input id="zip_code" v-model="address.zip_code" required />
         </div>
         <div>
           <label for="address_type">Address Type:</label>
-          <input id="address_type" v-model="address.address_type" required />
+          <Input id="address_type" v-model="address.address_type" required />
         </div>
         <div>
-          <input v-model="id" type="hidden" />
+          <Input v-model="id" type="hidden" />
         </div>
-        <button type="submit">Add Address</button>
-        <button @click.prevent="router.push(`/customers/${id}`)">Cancel</button>
+        <Button type="submit">Add Address</Button>
+        <Button @click.prevent="router.push(`/customers/${id}`)">Cancel</Button>
       </form>
     </div>
   </div>

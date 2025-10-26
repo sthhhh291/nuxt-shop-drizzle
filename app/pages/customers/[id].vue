@@ -16,21 +16,20 @@ const customer = computed(() => {
 <template>
   <div>
     <customerCardComponent v-if="customer" :customer="customer" />
-    <div v-if="!showForm" id="buttons">
-      <!-- placeholder for action buttons -->
-      <button>Edit Customer</button><button>Delete Customer</button>
-      <button @click="router.push(`/customers/addPhone/${customer!.id}`)">
+    <div v-if="!showForm" id="Buttons">
+      <!-- placeholder for action Buttons -->
+      <Button @click="router.push(`/customers/addPhone/${customer!.id}`)">
         Add Phone Number
-      </button>
-      <button @click="router.push(`/customers/addEmail/${customer!.id}`)">
+      </Button>
+      <Button @click="router.push(`/customers/addEmail/${customer!.id}`)">
         Add Email
-      </button>
-      <button @click="router.push(`/customers/addAddress/${customer!.id}`)">
+      </Button>
+      <Button @click="router.push(`/customers/addAddress/${customer!.id}`)">
         Add Address
-      </button>
-      <button @click="router.push(`/customers/addCar/${customer!.id}`)">
+      </Button>
+      <Button @click="router.push(`/customers/addCar/${customer!.id}`)">
         Add Car
-      </button>
+      </Button>
     </div>
     <div class="">
       <h2>Cars</h2>
@@ -64,15 +63,5 @@ ul {
 }
 li {
   margin-bottom: 0.5em;
-}
-button {
-  margin-right: 1rem;
-  padding: 4px;
-  background-color: rgb(118, 150, 117);
-  color: white;
-  border-radius: 2%;
-}
-button:hover {
-  background-color: rgb(127, 127, 199);
 }
 </style>

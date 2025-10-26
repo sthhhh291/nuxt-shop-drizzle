@@ -29,26 +29,26 @@ const updateAddress = async () => {
 
 <template>
   <div v-if="address" class="address-edit">
-    <h1>Edit Address: {{ address.street }}, {{ address.city }}</h1>
+    <!-- <h1>Edit Address: {{ address.street }}, {{ address.city }}</h1> -->
     <form @submit.prevent="updateAddress">
       <div>
         <label for="street">Street:</label>
-        <input id="street" v-model="address.street" type="text" required />
+        <Input id="street" v-model="address.street" type="text" required />
       </div>
       <div>
         <label for="city">City:</label>
-        <input id="city" v-model="address.city" type="text" required />
+        <Input id="city" v-model="address.city" type="text" required />
       </div>
       <div>
         <label for="state">State:</label>
-        <input id="state" v-model="address.state" type="text" required />
+        <Input id="state" v-model="address.state" type="text" required />
       </div>
       <div>
         <label for="zip">ZIP Code:</label>
-        <input id="zip" v-model="address.zip_code" type="text" required />
+        <Input id="zip" v-model="address.zip_code" type="text" required />
       </div>
-      <button type="submit">Save Changes</button>
-      <button type="button" @click="router.back()">Cancel</button>
+      <Button type="submit">Save Changes</Button>
+      <Button type="Button" @click="router.back()">Cancel</Button>
     </form>
   </div>
   <div v-else>
@@ -63,6 +63,7 @@ const updateAddress = async () => {
   padding: 1rem;
   background-color: #f9f9f9;
   border-radius: 8px;
+  align-items: center;
 }
 
 .address-edit h1 {
@@ -77,17 +78,5 @@ const updateAddress = async () => {
   display: block;
   margin-bottom: 0.25rem;
   font-weight: bold;
-}
-
-.address-edit input {
-  width: 100%;
-  padding: 0.5rem;
-  box-sizing: border-box;
-}
-
-.address-edit button {
-  margin-right: 0.5rem;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
 }
 </style>
