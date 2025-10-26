@@ -19,9 +19,15 @@ const customer = computed(() => {
     <div v-if="!showForm" id="buttons">
       <!-- placeholder for action buttons -->
       <button>Edit Customer</button><button>Delete Customer</button>
-      <button>Add Phone Number</button>
-      <button>Add Email</button>
-      <button>Add Address</button>
+      <button @click="router.push(`/customers/addPhone/${customer!.id}`)">
+        Add Phone Number
+      </button>
+      <button @click="router.push(`/customers/addEmail/${customer!.id}`)">
+        Add Email
+      </button>
+      <button @click="router.push(`/customers/addAddress/${customer!.id}`)">
+        Add Address
+      </button>
       <button @click="router.push(`/customers/addCar/${customer!.id}`)">
         Add Car
       </button>
