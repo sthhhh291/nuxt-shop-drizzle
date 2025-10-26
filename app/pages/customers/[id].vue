@@ -3,6 +3,7 @@
 import type { customerWithRelations } from "~~/db/schema";
 const showForm = ref(false);
 const route = useRoute();
+const router = useRouter();
 const { data } = await useFetch(`/api/customers/${route.params.id}`, {
   method: "GET",
 });
@@ -21,7 +22,9 @@ const customer = computed(() => {
       <button>Add Phone Number</button>
       <button>Add Email</button>
       <button>Add Address</button>
-      <button>Add Car</button>
+      <button @click="router.push(`/customers/addCar/${customer!.id}`)">
+        Add Car
+      </button>
     </div>
     <div class="">
       <h2>Cars</h2>
@@ -32,6 +35,7 @@ const customer = computed(() => {
         :car="{ ...car, customer: customer }"
       />
     </div>
+    <NuxtPage />
   </div>
 </template>
 <style scoped>
