@@ -46,28 +46,28 @@ const addCar = async () => {
       <h2>Add Car for Customer ID: {{ id }}</h2>
       <div>
         <label for="make">Make:</label>
-        <input id="make" v-model="car.make" required />
+        <Input id="make" v-model="car.make" required />
       </div>
       <div>
         <label for="model">Model:</label>
-        <input id="model" v-model="car.model" required />
+        <Input id="model" v-model="car.model" required />
       </div>
       <div>
         <label for="year">Year:</label>
-        <input id="year" v-model.number="car.year" type="number" required />
+        <Input id="year" v-model.number="car.year" type="number" required />
       </div>
       <div>
         <label for="vin">VIN:</label>
-        <input id="vin" v-model="car.vin" required />
-        <input v-model="id" type="hidden" />
+        <Input id="vin" v-model="car.vin" required />
+        <Input v-model="id" type="hidden" />
       </div>
-      <button type="submit">Add Car</button>
-      <button @click.prevent="router.push(`/customers/${id}`)">Cancel</button>
+      <Button type="submit">Add Car</Button>
+      <Button @click.prevent="router.push(`/customers/${id}`)">Cancel</Button>
     </form>
   </div>
 </template>
 <style scoped>
-form {
+/* form {
   display: flex;
   flex-direction: column;
   max-width: 400px;
@@ -76,13 +76,13 @@ label {
   font-weight: bold;
   margin-top: 1em;
 }
-input {
+Input {
   width: 100%;
   padding: 0.5em;
   margin-top: 0.5em;
   box-sizing: border-box;
 }
-button {
+Button {
   margin-top: 1.5em;
   padding: 0.75em;
   background-color: #4caf50;
@@ -90,7 +90,7 @@ button {
   border: none;
   cursor: pointer;
 }
-button:hover {
+Button:hover {
   background-color: #45a049;
 }
 .center {
@@ -101,5 +101,5 @@ button:hover {
 }
 h2 {
   text-align: center;
-}
+} */
 </style>

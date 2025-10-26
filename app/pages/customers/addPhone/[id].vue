@@ -35,7 +35,7 @@ const addPhone = async () => {
       <h2>Add Phone for Customer ID: {{ id }}</h2>
       <div>
         <label for="phone_number">Phone Number:</label>
-        <input id="phone_number" v-model="phone.phone_number" required />
+        <Input id="phone_number" v-model="phone.phone_number" required />
       </div>
       <div>
         <label for="phone_type">Phone Type:</label>
@@ -43,8 +43,7 @@ const addPhone = async () => {
           id="phone_type"
           v-model="phone.phone_type"
           name="phone_type"
-          required
-        >
+          required>
           <option value="" disabled>Select type</option>
           <option value="Mobile">Mobile</option>
           <option value="Home">Home</option>
@@ -52,10 +51,10 @@ const addPhone = async () => {
         </select>
       </div>
       <div>
-        <input v-model="id" type="hidden" />
+        <Input v-model="id" type="hidden" />
       </div>
-      <button type="submit">Add Phone</button>
-      <button @click.prevent="router.push(`/customers/${id}`)">Cancel</button>
+      <Button type="submit">Add Phone</Button>
+      <Button @click.prevent="router.push(`/customers/${id}`)">Cancel</Button>
     </form>
   </div>
 </template>
@@ -73,23 +72,13 @@ form {
 label {
   margin-bottom: 0.5em;
 }
-input,
+Input,
 select,
 option {
   padding: 0.5em;
   border: 1px solid #ccc;
   border-radius: 3px;
   width: 100%;
-}
-button {
-  padding: 0.5em;
-  background-color: rgb(118, 150, 117);
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-button:hover {
-  background-color: #45a049;
 }
 .center {
   display: flex;

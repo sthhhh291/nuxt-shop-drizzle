@@ -10,12 +10,9 @@ provide("refreshCustomers", refresh);
 </script>
 
 <template>
-  <div class="grid place-items-center container mx-auto p-4">
-    <div class="space-y-8">
-      <h1>Home Page</h1>
-      <customersComponent :customers="customers" />
-      <addCustomerComponent @customerAdded="refresh" />
-    </div>
+  <div class="container">
+    <customersComponent :customers="customers" />
+    <addCustomerComponent @customerAdded="refresh" />
   </div>
 </template>
 
@@ -23,6 +20,7 @@ provide("refreshCustomers", refresh);
 .container {
   max-width: 800px;
   display: grid;
+  grid-template-columns: 2fr 1fr;
   place-items: center;
 }
 .space-y-8 > * + * {

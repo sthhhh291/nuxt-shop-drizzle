@@ -11,7 +11,7 @@ defineProps<{
 </script>
 <style scoped>
 button {
-  padding: 10px 20px;
+  padding: 5px;
   background-color: #42b983;
   color: white;
   border: none;
