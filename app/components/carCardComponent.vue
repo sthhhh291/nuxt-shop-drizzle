@@ -13,6 +13,9 @@ defineProps<{
         {{ car.year }} {{ car.make }} {{ car.model }} {{ car.vin }}
         {{ car.license }} {{ car.fleet }}</p
       >
+      <div v-for="estimate in car.estimates">
+        <EstimateCardComponent :key="estimate.id" :estimate="estimate" />
+      </div>
     </div>
   </div>
 </template>

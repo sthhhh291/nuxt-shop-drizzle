@@ -10,11 +10,11 @@ const { data: cars } = await useFetch<carWithRelations[]>("/api/cars", {
   <div>
     <div class="">
       <h2>All Cars</h2>
-      <carCardComponent
-        v-if="cars"
-        v-for="car in cars"
-        :key="car.id"
-        :car="car" />
+      <div v-for="car in cars" :key="car.id" class="">
+        <NuxtLink :to="`/cars/${car.id}`">
+          <carCardComponent W :car="car" />
+        </NuxtLink>
+      </div>
     </div>
   </div>
 </template>

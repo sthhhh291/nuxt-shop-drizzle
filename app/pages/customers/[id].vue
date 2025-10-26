@@ -8,8 +8,8 @@ const { data } = await useFetch(`/api/customers/${route.params.id}`, {
   method: "GET",
 });
 const customer = computed(() => {
-  return data.value && "customer" in data.value
-    ? (data.value.customer as customerWithRelations)
+  return data.value && "customer" in data.value ?
+      (data.value.customer as customerWithRelations)
     : null;
 });
 </script>
@@ -37,10 +37,8 @@ const customer = computed(() => {
         v-if="customer && customer.cars"
         v-for="car in customer.cars"
         :key="car.id"
-        :car="{ ...car, customer: customer }"
-      />
+        :car="{ ...car, customer: customer }" />
     </div>
-    <NuxtPage />
   </div>
 </template>
 <style scoped>
