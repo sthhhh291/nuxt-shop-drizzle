@@ -11,7 +11,9 @@ type Props = {
   parts_margin: number;
   margin: number;
 };
-const props = defineProps<Props>();
+const props = defineProps<{
+  totals: Props;
+}>();
 </script>
 
 <template>
@@ -32,16 +34,16 @@ const props = defineProps<Props>();
     </thead>
     <tbody>
       <tr>
-        <td>{{ props.labor }}</td>
-        <td>{{ props.parts }}</td>
-        <td>{{ props.oil }}</td>
-        <td>{{ props.subtotal }}</td>
-        <td>{{ props.tax }}</td>
-        <td>{{ props.shop_fees }}</td>
-        <td>{{ props.total }}</td>
-        <td>{{ props.cost }}</td>
-        <td>{{ props.parts_margin }}</td>
-        <td>{{ props.margin }}</td>
+        <td>{{ props.totals.labor }}</td>
+        <td>{{ props.totals.parts }}</td>
+        <td>{{ props.totals.oil }}</td>
+        <td>{{ props.totals.subtotal }}</td>
+        <td>{{ props.totals.tax }}</td>
+        <td>{{ props.totals.shop_fees }}</td>
+        <td>{{ props.totals.total }}</td>
+        <td>{{ props.totals.cost }}</td>
+        <td>{{ props.totals.parts_margin }}</td>
+        <td>{{ props.totals.margin }}</td>
       </tr>
     </tbody>
   </table>

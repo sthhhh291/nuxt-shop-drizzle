@@ -17,6 +17,7 @@ const totals = data.value.totals;
     <labor-table-component :labor="estimate.labor" />
     <part-table-component :parts="estimate.parts" />
     <oil-table-component :oils="estimate.oil" />
-    <totals-table-component :totals="estimate.totals" />
+    <totals-table-component :totals="totals" />
+    <h1>Grand Total: {{ totals.total }}</h1>
   </div>
 </template>
