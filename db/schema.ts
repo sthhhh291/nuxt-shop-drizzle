@@ -166,18 +166,18 @@ export const estimate_totals = sqliteView("estimate_totals", {
     coalesce(o.oil,0) as oil,
     coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) as subtotal,
     round(0.081*(coalesce(p.parts,0)+coalesce(o.oil,0)),2) as tax,
-    if(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) >500,15,
-    round(0.03*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2))as shop_fees,
+    CASE WHEN coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) >500 THEN 15
+    ELSE round(0.03*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2) END as shop_fees,
     coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)+
-    round(0.081*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2)+
-    if(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) >500,15,
-    round(0.03*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2)) as total,
+    round(0.081*(coalesce(p.parts,0)+coalesce(o.oil,0)),2)+
+    CASE WHEN coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) >500 THEN 15
+    ELSE round(0.03*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2) END as total,
     coalesce(p.p_cost,0) + coalesce(o.o_cost,0) as cost,
     coalesce(p.parts,0) - coalesce(p.p_cost,0) as parts_margin,
     coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)+
-    round(0.081*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2)+
-    if(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) >500,15,
-    round(0.03*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2)) -
+    round(0.081*(coalesce(p.parts,0)+coalesce(o.oil,0)),2)+
+    CASE WHEN coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) >500 THEN 15
+    ELSE round(0.03*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2) END -
     coalesce(p.p_cost,0) + coalesce(o.o_cost,0) as margin 
 from estimates r
 left join (
