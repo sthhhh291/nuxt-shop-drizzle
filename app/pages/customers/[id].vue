@@ -33,11 +33,12 @@ const customer = computed(() => {
     </div>
     <div class="">
       <h2>Cars</h2>
-      <carCardComponent
+      <NuxtLink
         v-if="customer && customer.cars"
         v-for="car in customer.cars"
-        :key="car.id"
-        :car="{ ...car, customer: customer }" />
+        :to="`/cars/${car.id}`">
+        <CarCardComponent :car="{ ...car, customer: customer }" />
+      </NuxtLink>
     </div>
   </div>
 </template>
