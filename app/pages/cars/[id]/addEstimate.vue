@@ -14,7 +14,7 @@ const estimateSchema = z.object({
 });
 const estimate = {
   car_id: Number(id),
-  date: "",
+  date: new Date().toISOString().split("T")[0],
   hours_taken: 0,
   miles: 0,
   estimate_type: "",
@@ -43,10 +43,10 @@ const addEstimate = async () => {
 </script>
 
 <template>
-  <div class="container mx-auto p-4">
-    <div class="space-y-4">
-      <h1>Add Estimate for Car {{ id }}</h1>
+  <div class="">
+    <div class="">
       <form @submit.prevent="addEstimate">
+        <!-- <h1>Add Estimate for Car {{ id }}</h1> -->
         <div>
           <label for="date">Date (YYYY-MM-DD):</label>
           <Input id="date" v-model="estimate.date" required />
@@ -72,6 +72,7 @@ const addEstimate = async () => {
           <Input id="estimate_type" v-model="estimate.estimate_type" required />
         </div>
         <Button type="submit">Add Estimate</Button>
+        <Button variant="secondary" @click="router.back()">Cancel</Button>
       </form>
     </div>
   </div>
