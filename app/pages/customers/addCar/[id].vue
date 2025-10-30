@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // import type { Car } from "~~/db/schema";
 import { z } from "zod";
+import type { Car } from "~~/db/schema";
 const { id } = useRoute().params;
 const carSchema = z.object({
   make: z.string().min(1, "Make is required"),
@@ -15,7 +16,7 @@ const carSchema = z.object({
 const car = {
   make: "",
   model: "",
-  year: new Date().getFullYear(),
+  year: new Date().getFullYear() - 6,
   vin: "",
 };
 const router = useRouter();
@@ -33,8 +34,9 @@ const addCar = async () => {
       method: "POST",
       body: newCar,
     });
-    console.log("Car added:", response.data.value);
-    router.push(`/cars/${response.data.value!.id}`);
+    const ncar: Car = response.data.value as Car;
+    console.log("Car added:", ncar);
+    router.push(`/cars/${ncar.id}`);
   } catch (error) {
     console.error("Error adding car:", error);
   }
@@ -46,19 +48,19 @@ const addCar = async () => {
       <h2>Add Car for Customer ID: {{ id }}</h2>
       <div>
         <label for="make">Make:</label>
-        <Input id="make" v-model="car.make" required />
+        <Input id="make" v-model="car.make" />
       </div>
       <div>
         <label for="model">Model:</label>
-        <Input id="model" v-model="car.model" required />
+        <Input id="model" v-model="car.model" />
       </div>
       <div>
         <label for="year">Year:</label>
-        <Input id="year" v-model.number="car.year" type="number" required />
+        <Input id="year" v-model.number="car.year" type="number" />
       </div>
       <div>
         <label for="vin">VIN:</label>
-        <Input id="vin" v-model="car.vin" required />
+        <Input id="vin" v-model="car.vin" />
         <Input v-model="id" type="hidden" />
       </div>
       <Button type="submit">Add Car</Button>
