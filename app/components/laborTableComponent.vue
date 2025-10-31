@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import type { Labor } from "~~/db/schema";
 const router = useRouter();
-defineProps<{
+const props = defineProps<{
   labor: Labor[];
 }>();
+
+const laborRef = ref<Labor[]>(props.labor);
+console.log("Labor data in component:", laborRef.value);
+// const refreshNuxtData = useNuxtApp().$refreshNuxtData;
 
 const deleteLabor = async (id: number) => {
   try {
@@ -11,7 +15,8 @@ const deleteLabor = async (id: number) => {
       await useFetch(`/api/labor/${id}`, {
         method: "DELETE",
       });
-      refreshNuxtData();
+      laborRef.value = laborRef.value.filter((lab) => lab.id !== id);
+      // laborRef.value = { ...laborRef.value };
       // router.go(0); // Refresh the page to reflect changes
     }
   } catch (error) {
@@ -31,7 +36,7 @@ const deleteLabor = async (id: number) => {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="lab in labor" :key="lab.id">
+      <tr v-for="lab in laborRef" :key="lab.id">
         <td>{{ lab.description }}</td>
         <td>{{ lab.hours }}</td>
         <td>{{ lab.price }}</td>
