@@ -34,7 +34,7 @@ const updateEstimate = async () => {
         >Add Parts</Button
       >
     </h4>
-    <part-table-component :parts="estimate.parts" />
+    <part-table-component :parts="estimate.parts" @emit="updateEstimate" />
     <h4>
       Oil
       <Button @click="router.push(`/estimates/${id}/addOil`)">Add Oil</Button>
