@@ -5,6 +5,8 @@ const props = defineProps<{
   labor: Labor[];
 }>();
 
+const emit = defineEmits(["emit"]);
+
 const laborRef = ref<Labor[]>(props.labor);
 console.log("Labor data in component:", laborRef.value);
 // const refreshNuxtData = useNuxtApp().$refreshNuxtData;
@@ -16,6 +18,7 @@ const deleteLabor = async (id: number) => {
         method: "DELETE",
       });
       laborRef.value = laborRef.value.filter((lab) => lab.id !== id);
+      emit("emit");
       // laborRef.value = { ...laborRef.value };
       // router.go(0); // Refresh the page to reflect changes
     }
