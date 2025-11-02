@@ -1,29 +1,44 @@
 <script setup lang="ts">
+import { z } from "zod";
 const { id } = useRoute().params;
 const router = useRouter();
 const part = ref({
   description: "",
-  quantity: 0,
+  quantity: 1,
+  mfr_number: "",
+  part_number: "",
   cost: 0,
   list: 0,
   unit_price: 0,
   estimate_id: Number(id),
 });
+
+const partSchema = z.object({
+  description: z.string().min(1).max(255),
+  mfr_number: z.string().optional(),
+  part_number: z.string().optional(),
+  quantity: z.number().min(1),
+  cost: z.number().min(0),
+  list: z.number().min(0),
+  unit_price: z.number().min(0),
+  estimate_id: z.number().min(1),
+});
+
 const submitPart = async () => {
-  const npart = {
-    ...part.value,
+  const npart = partSchema.parse({
+    description: part.value.description,
     quantity: Number(part.value.quantity),
-    part_number: "",
     mfr_number: "",
+    part_number: "",
     cost: Number(part.value.cost),
     list: Number(part.value.list),
     unit_price: Number(part.value.unit_price),
     estimate_id: Number(part.value.estimate_id),
-  };
+  });
   try {
     await useFetch(`/api/parts`, {
       method: "POST",
-      body: JSON.stringify(npart),
+      body: npart,
       headers: {
         "Content-Type": "application/json",
       },
@@ -35,9 +50,9 @@ const submitPart = async () => {
 };
 
 const calcPrice = () => {
-  part.value.cost * 1.86 > part.value.list ?
-    (part.value.unit_price = part.value.cost * 1.86)
-  : (part.value.unit_price = part.value.list);
+  part.value.cost * 1.86 > part.value.list
+    ? (part.value.unit_price = part.value.cost * 1.86)
+    : (part.value.unit_price = part.value.list);
   // Implement price calculation logic here if needed
 };
 </script>
@@ -45,61 +60,86 @@ const calcPrice = () => {
 <template>
   <div>
     <h1>Add Part to Estimate {{ id }}</h1>
-    <form @submit.prevent="submitPart" class="card p-3">
+    <form class="card p-3" @submit.prevent="submitPart">
       <div class="mb-3">
         <label for="description" class="form-label">Description</label>
         <Input
+          id="description"
+          v-model="part.description"
           type="text"
           class="form-control"
-          id="description"
           name="description"
-          v-model="part.description"
-          required />
+          required
+        />
+      </div>
+      <div class="mb-3">
+        <label for="mfr_number" class="form-label">Manufacturer Number</label>
+        <Input
+          id="mfr_number"
+          v-model="part.mfr_number"
+          type="text"
+          class="form-control"
+          name="mfr_number"
+        />
+      </div>
+      <div class="mb-3">
+        <label for="part_number" class="form-label">Part Number</label>
+        <Input
+          id="part_number"
+          v-model="part.part_number"
+          type="text"
+          class="form-control"
+          name="part_number"
+        />
       </div>
       <div class="mb-3">
         <label for="quantity" class="form-label">Quantity</label>
         <Input
+          id="quantity"
+          v-model="part.quantity"
           type="number"
           class="form-control"
-          id="quantity"
           name="quantity"
-          v-model="part.quantity"
+          required
           @input="calcPrice"
-          required />
+        />
       </div>
       <div class="mb-3">
         <label for="cost" class="form-label">Cost</label>
         <Input
+          id="cost"
+          v-model="part.cost"
           type="number"
           step="0.01"
           class="form-control"
-          id="cost"
           name="cost"
-          v-model="part.cost"
+          required
           @input="calcPrice"
-          required />
+        />
       </div>
       <div class="mb-3">
         <label for="list" class="form-label">List</label>
         <Input
+          id="list"
+          v-model="part.list"
           type="number"
           class="form-control"
-          id="list"
           name="list"
-          v-model="part.list"
+          readonly
           @input="calcPrice"
-          readonly />
+        />
       </div>
       <div class="mb-3">
         <label for="unit_price" class="form-label">Unit Price</label>
         <Input
+          id="unit_price"
+          v-model="part.unit_price"
           type="number"
           step="0.01"
           class="form-control"
-          id="unit_price"
           name="unit_price"
-          v-model="part.unit_price"
-          required />
+          required
+        />
       </div>
       <Button type="submit" class="btn btn-primary">Add Part</Button>
     </form>

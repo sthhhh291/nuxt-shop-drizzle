@@ -1,5 +1,5 @@
 import { db } from "~~/server/sqlite-service";
-import type { Labor } from "~~/db/schema";
+// import type { Labor } from "~~/db/schema";
 import { labor } from "~~/db/schema";
 import { eq } from "drizzle-orm";
 
