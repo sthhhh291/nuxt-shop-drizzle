@@ -34,16 +34,16 @@ const props = defineProps<{
     </thead>
     <tbody>
       <tr>
-        <td>{{ props.totals.labor }}</td>
-        <td>{{ props.totals.parts }}</td>
-        <td>{{ props.totals.oil }}</td>
-        <td>{{ props.totals.subtotal }}</td>
-        <td>{{ props.totals.tax }}</td>
-        <td>{{ props.totals.shop_fees }}</td>
-        <td>{{ props.totals.total }}</td>
-        <td>{{ props.totals.cost }}</td>
-        <td>{{ props.totals.parts_margin }}</td>
-        <td>{{ props.totals.margin }}</td>
+        <td>{{ formatCurrency(props.totals.labor) }}</td>
+        <td>{{ formatCurrency(props.totals.parts) }}</td>
+        <td>{{ formatCurrency(props.totals.oil) }}</td>
+        <td>{{ formatCurrency(props.totals.subtotal) }}</td>
+        <td>{{ formatCurrency(props.totals.tax) }}</td>
+        <td>{{ formatCurrency(props.totals.shop_fees) }}</td>
+        <td>{{ formatCurrency(props.totals.total) }}</td>
+        <td>{{ formatCurrency(props.totals.cost) }}</td>
+        <td>{{ formatCurrency(props.totals.parts_margin) }}</td>
+        <td>{{ formatCurrency(props.totals.margin) }}</td>
       </tr>
     </tbody>
   </table>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Part } from "~~/db/schema";
+const router = useRouter();
 defineProps<{
   parts: Part[];
 }>();
@@ -27,6 +28,7 @@ const deletePart = async (id: number) => {
         <th>Quantity</th>
         <th>Cost</th>
         <th>Unit Price</th>
+        <th>Extended Price</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -34,13 +36,18 @@ const deletePart = async (id: number) => {
       <tr v-for="part in parts" :key="part.id">
         <td>{{ part.description }}</td>
         <td>{{ part.quantity }}</td>
-        <td>{{ part.cost }}</td>
-        <td>{{ part.unit_price }}</td>
+        <td>{{ formatCurrency(part.cost) }}</td>
+        <td>{{ formatCurrency(part.unit_price) }}</td>
+        <td>{{ formatCurrency(part.quantity * part.unit_price) }}</td>
         <td>
           <!-- Actions such as Edit/Delete can be added here -->
-          <button class="btn btn-sm btn-primary">Edit</button>
-          <button class="btn btn-sm btn-danger" @click="deletePart(part.id)"
-            >Delete</button
+          <Button
+            class="btn btn-sm btn-primary"
+            @click="router.push(`/parts/${part.id}/edit`)"
+            >Edit</Button
+          >
+          <Button class="btn btn-sm btn-danger" @click="deletePart(part.id)"
+            >Delete</Button
           >
         </td></tr
       >

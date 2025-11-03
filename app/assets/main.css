@@ -69,3 +69,12 @@ form {
   padding: 1em;
   border: 1px solid #ccc;
 }
+
+a {
+  color: #3490dc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}

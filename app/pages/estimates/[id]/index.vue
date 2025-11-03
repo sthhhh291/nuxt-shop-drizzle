@@ -17,7 +17,6 @@ const updateEstimate = async () => {
 
 <template>
   <div class="">
-    <Button @click="updateEstimate">Refresh</Button>
     <customer-table-component class="table" :customer="estimate.car.customer" />
     <car-table-component class="table" :car="estimate.car" />
     <estimate-table-component class="table" :estimate="estimate" />
@@ -39,8 +38,8 @@ const updateEstimate = async () => {
       Oil
       <Button @click="router.push(`/estimates/${id}/addOil`)">Add Oil</Button>
     </h4>
-    <oil-table-component :oils="estimate.oil" />
+    <oil-table-component :oils="estimate.oil" @emit="updateEstimate" />
     <totals-table-component :totals="totals" />
-    <h1>Grand Total: {{ totals.total }}</h1>
+    <h1>Grand Total: {{ formatCurrency(totals.total) }}</h1>
   </div>
 </template>

@@ -13,8 +13,10 @@ defineProps<{
         {{ car.year }} {{ car.make }} {{ car.model }} {{ car.vin }}
         {{ car.license }} {{ car.fleet }}</p
       >
-      <div v-for="estimate in car.estimates">
-        <EstimateCardComponent :key="estimate.id" :estimate="estimate" />
+      <div v-for="estimate in car.estimates" :key="estimate.id">
+        <NuxtLink :to="`/estimates/${estimate.id}`">
+          <EstimateCardComponent :key="estimate.id" :estimate="estimate" />
+        </NuxtLink>
       </div>
     </div>
   </div>

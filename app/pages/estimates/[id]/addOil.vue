@@ -3,40 +3,40 @@ import { z } from "zod";
 const { id } = useRoute().params;
 const router = useRouter();
 const part = ref({
-  description: "",
+  type: "",
   quantity: 1,
   mfr_number: "",
   part_number: "",
   cost: 0,
   list: 0,
-  unit_price: 0,
+  price_per_unit: 0,
   estimate_id: Number(id),
 });
 
 const partSchema = z.object({
-  description: z.string().min(1).max(255),
+  type: z.string().min(1).max(255),
   mfr_number: z.string().optional(),
   part_number: z.string().optional(),
   quantity: z.number().min(1),
   cost: z.number().min(0),
   list: z.number().min(0),
-  unit_price: z.number().min(0),
+  price_per_unit: z.number().min(0),
   estimate_id: z.number().min(1),
 });
 
 const submitPart = async () => {
   const npart = partSchema.parse({
-    description: part.value.description,
+    type: part.value.type,
     quantity: Number(part.value.quantity),
     mfr_number: "",
     part_number: "",
     cost: Number(part.value.cost),
     list: Number(part.value.list),
-    unit_price: Number(part.value.unit_price),
+    price_per_unit: Number(part.value.price_per_unit),
     estimate_id: Number(part.value.estimate_id),
   });
   try {
-    await useFetch(`/api/parts`, {
+    await useFetch(`/api/oil`, {
       method: "POST",
       body: npart,
       headers: {
@@ -45,31 +45,33 @@ const submitPart = async () => {
     });
     router.push(`/estimates/${id}`);
   } catch (error) {
-    console.error("Error adding part:", error);
+    console.error("Error adding oil:", error);
   }
 };
 
 const calcPrice = () => {
   // const compare = part.value.cost * 1.86;
   part.value.cost * 1.86 > part.value.list ?
-    (part.value.unit_price = part.value.list)
-  : (part.value.unit_price = parseFloat((part.value.cost * 1.86).toFixed(2)));
+    (part.value.price_per_unit = part.value.list)
+  : (part.value.price_per_unit = parseFloat(
+      (part.value.cost * 1.86).toFixed(2)
+    ));
   // Implement price calculation logic here if needed
 };
 </script>
 
 <template>
   <div>
-    <h1>Add Part to Estimate {{ id }}</h1>
+    <h1>Add Oil to Estimate {{ id }}</h1>
     <form class="card p-3" @submit.prevent="submitPart">
       <div class="mb-3">
-        <label for="description" class="form-label">Description</label>
+        <label for="type" class="form-label">type</label>
         <Input
-          id="description"
-          v-model="part.description"
+          id="type"
+          v-model="part.type"
           type="text"
           class="form-control"
-          name="description"
+          name="type"
           required />
       </div>
       <div class="mb-3">
@@ -124,14 +126,14 @@ const calcPrice = () => {
           @input="calcPrice" />
       </div>
       <div class="mb-3">
-        <label for="unit_price" class="form-label">Unit Price</label>
+        <label for="price_per_unit" class="form-label">Unit Price</label>
         <Input
-          id="unit_price"
-          v-model="part.unit_price"
+          id="price_per_unit"
+          v-model="part.price_per_unit"
           type="number"
           step="0.01"
           class="form-control"
-          name="unit_price"
+          name="price_per_unit"
           required />
       </div>
       <Button type="submit" class="btn btn-primary">Add Part</Button>

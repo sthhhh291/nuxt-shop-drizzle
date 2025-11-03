@@ -3,13 +3,13 @@ import { oil, type Oil } from "~~/db/schema";
 import { z } from "zod";
 
 const oilSchema = z.object({
-  description: z.string(),
+  type: z.string(),
   mfr_number: z.string().optional(),
   part_number: z.string().optional(),
   quantity: z.number(),
   cost: z.number(),
   list: z.number(),
-  price: z.number(),
+  price_per_unit: z.number(),
   estimate_id: z.number(),
 });
 
@@ -20,13 +20,13 @@ export default eventHandler(async (event) => {
     const newOil = await db
       .insert(oil)
       .values({
-        description: parsedOil.description,
+        type: parsedOil.type,
         mfr_number: parsedOil.mfr_number,
         part_number: parsedOil.part_number,
         quantity: parsedOil.quantity,
         cost: parsedOil.cost,
         list: parsedOil.list,
-        price: parsedOil.price,
+        price_per_unit: parsedOil.price_per_unit,
         estimate_id: parsedOil.estimate_id,
       } as any)
       .returning()

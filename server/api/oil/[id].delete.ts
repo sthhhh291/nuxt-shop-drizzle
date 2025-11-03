@@ -1,5 +1,5 @@
 import { db } from "~~/server/sqlite-service";
-import { parts } from "~~/db/schema";
+import { oil } from "~~/db/schema";
 import { eq } from "drizzle-orm";
 
 export default eventHandler(async (event) => {
@@ -11,8 +11,8 @@ export default eventHandler(async (event) => {
     }
 
     const deletedCount = await db
-      .delete(parts)
-      .where(eq(parts.id, Number(id)))
+      .delete(oil)
+      .where(eq(oil.id, Number(id)))
       .returning()
       .then((res) => res.length);
 

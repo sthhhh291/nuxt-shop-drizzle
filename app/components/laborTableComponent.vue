@@ -42,7 +42,7 @@ const deleteLabor = async (id: number) => {
       <tr v-for="lab in laborRef" :key="lab.id">
         <td>{{ lab.description }}</td>
         <td>{{ lab.hours }}</td>
-        <td>{{ lab.price }}</td>
+        <td>{{ formatCurrency(lab.price) }}</td>
         <td>
           <Button @click="router.push(`/labor/${lab.id}/edit`)">Edit</Button>
           <Button @click="deleteLabor(lab.id)">Delete</Button>
