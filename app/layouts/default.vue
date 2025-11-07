@@ -4,6 +4,7 @@
     <NuxtLink to="/estimates">Estimates</NuxtLink>
     <NuxtLink to="/customers">Customers</NuxtLink>
     <NuxtLink to="/cars">Cars</NuxtLink>
+    <Signout />
   </ul>
   <main>
     <NuxtPage />

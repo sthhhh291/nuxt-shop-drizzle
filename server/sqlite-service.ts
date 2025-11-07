@@ -1,10 +1,11 @@
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import * as schema from "../db/schema.js";
+import * as authSchema from "~~/auth-schema";
 
 import Database from "better-sqlite3";
 import type {
-  users,
+  // users,
   customers,
   cars,
   estimates,
@@ -25,5 +26,5 @@ export const sqlite = new Database("./db/dev.db");
 // }> = drizzle(sqlite);
 
 export const db = drizzle(sqlite, {
-  schema,
+  schema: { ...schema, ...authSchema },
 });

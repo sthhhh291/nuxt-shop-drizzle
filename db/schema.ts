@@ -8,15 +8,15 @@ import {
 import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 import { relations, sql } from "drizzle-orm";
 
-export const users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
-});
+// export const users = sqliteTable("users", {
+//   id: integer("id").primaryKey({ autoIncrement: true }),
+//   name: text("name").notNull(),
+//   email: text("email").notNull().unique(),
+//   passwordHash: text("password_hash").notNull(),
+// });
 
-export type User = InferSelectModel<typeof users>;
-export type InsertUser = InferInsertModel<typeof users>;
+// export type User = InferSelectModel<typeof users>;
+// export type InsertUser = InferInsertModel<typeof users>;
 
 export const customers = sqliteTable("customers", {
   id: integer("id").primaryKey({ autoIncrement: true }),
