@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-// import { useAuthClient } from '~~/composables/useAuthClient'?
 
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
 
 const { signIn } = useAuthClient()
+const { refresh } = useBetterAuth()
 
 const handleLogin = async () => {
     try {
         await signIn.email({ email: email.value, password: password.value })
-        navigateTo('/')
-        // Handle successful login (e.g., redirect or show a success message)
+        // Refresh the auth state to update the layout
+        await refresh()
+        // Navigate to home page after successful login
+        await navigateTo('/')
     } catch (error) {
         errorMessage.value = 'Login failed. Please try again.'
     }

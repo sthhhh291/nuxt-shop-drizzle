@@ -1,40 +1,35 @@
 <script setup lang="ts">
-// Try using the API endpoint directly
-const { data: session, pending: loading } = await useFetch(
-  "/api/auth/get-session",
-  {
-    server: false, // Client-side only to avoid SSR issues
-    default: () => null,
-  }
-);
+const { session, loading, user, isAuthenticated } = useBetterAuth()
 
-// Watch for session changes
+// Watch for all auth state changes with debugging
 watch(
-  session,
-  (newSession) => {
-    console.log("Session updated:", newSession);
+  user,
+  (newUser) => {
+    console.log("Layout: User updated:", newUser);
   },
   { immediate: true }
 );
 
-const handleSignOut = async () => {
-  try {
-    await $fetch("/api/auth/signout", {
-      method: "POST",
-    });
-    // Navigate to login page after successful sign out
-    // await refresh();
-    await navigateTo("/auth/login");
-  } catch (error) {
-    console.error("Sign out failed:", error);
-    // You might want to show a toast or error message here
-  }
-};
+watch(
+  isAuthenticated,
+  (newAuth) => {
+    console.log("Layout: Authentication status:", newAuth);
+  },
+  { immediate: true }
+);
+
+watch(
+  loading,
+  (newLoading) => {
+    console.log("Layout: Loading status:", newLoading);
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
   <div v-if="loading">Loading...</div>
-  <ul v-else-if="!session?.user && !session?.data">
+  <ul v-else-if="!isAuthenticated">
     <NuxtLink to="/auth/login">Sign In</NuxtLink>
     <NuxtLink to="/auth/signup">Sign Up</NuxtLink>
   </ul>
@@ -43,8 +38,8 @@ const handleSignOut = async () => {
     <NuxtLink to="/estimates">Estimates</NuxtLink>
     <NuxtLink to="/customers">Customers</NuxtLink>
     <NuxtLink to="/cars">Cars</NuxtLink>
+    <Button disabled>Welcome, {{ user.name || user.email }}</Button>
     <Signout />
-    <!-- <Button @click="handleSignOut">Sign Out</Button> -->
   </ul>
   <main>
     <NuxtPage />

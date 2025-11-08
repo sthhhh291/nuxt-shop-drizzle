@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { useAuthClient } from "~/composables/auth";
-
-const { signOut } = useAuthClient();
+const { signOut } = useBetterAuth();
 
 const handleSignOut = async () => {
   try {
     await signOut();
     // Navigate to login page after successful sign out
-    await refresh();
     await navigateTo("/auth/login");
   } catch (error) {
     console.error("Sign out failed:", error);

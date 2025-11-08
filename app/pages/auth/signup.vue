@@ -1,33 +1,36 @@
 <script setup lang="ts">
-    // signup logic will go here
-    import { ref } from 'vue'
-    const { signUp } = useAuthClient()
+import { ref } from 'vue'
 
-    const email = ref('')
-    const name = ref('')
-    const password = ref('')
-    const confirmPassword = ref('')
-    const errorMessage = ref('')
+const { signUp } = useAuthClient()
+const { refresh } = useBetterAuth()
 
-    const signup = async () => {
-        if (password.value !== confirmPassword.value) {
-            errorMessage.value = 'Passwords do not match.'
-            return
-        }
+const email = ref('')
+const name = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+const errorMessage = ref('')
 
-        try {
-            // Call your signup API here
-            await signUp.email({
-                email: email.value, 
-                password: password.value,
-                name: name.value
-            })
-            navigateTo('/')
-            // Handle successful signup (e.g., redirect or show a success message)
-        } catch (error) {
-            errorMessage.value = 'Signup failed. Please try again.'
-        }
+const signup = async () => {
+    if (password.value !== confirmPassword.value) {
+        errorMessage.value = 'Passwords do not match.'
+        return
     }
+
+    try {
+        // Call your signup API here
+        await signUp.email({
+            email: email.value, 
+            password: password.value,
+            name: name.value
+        })
+        // Refresh the auth state to update the layout
+        await refresh()
+        // Navigate to home page after successful signup
+        await navigateTo('/')
+    } catch (error) {
+        errorMessage.value = 'Signup failed. Please try again.'
+    }
+}
 </script>
 
 <template>

@@ -71,10 +71,11 @@ form {
 }
 
 a {
-  color: #3490dc;
+  color: #000000;
   text-decoration: none;
 }
 
 a:hover {
-  text-decoration: underline;
+  /* text-decoration: underline; */
+  color: #2176bd;
 }

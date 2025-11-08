@@ -21,24 +21,29 @@
 </template>
 
 <script setup lang="ts">
-// Replace 'signUp' with the actual method name provided by useAuth
-const { signUp: registerUser } = useAuth();
+const { signUp } = useAuthClient();
+const { refresh } = useBetterAuth();
+
 const username = ref("");
 const email = ref("");
 const password = ref("");
-// const errorMessage = ref("");
+const errorMessage = ref("");
+
 const register = async () => {
   try {
-    const res = await registerUser({
-      username: username.value,
+    await signUp.email({
+      name: username.value,
       email: email.value,
       password: password.value,
     });
-    console.log("Registration successful:", res);
-    // Optionally, redirect to login or home page
+    console.log("Registration successful");
+    // Refresh auth state to update layout
+    await refresh();
+    // Redirect to home after successful registration
+    await navigateTo('/');
   } catch (error) {
     console.error("Registration failed:", error);
-    // errorMessage.value = "Registration failed. Please try again.";
+    errorMessage.value = "Registration failed. Please try again.";
   }
 };
 </script>

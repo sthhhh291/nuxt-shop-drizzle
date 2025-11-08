@@ -1,5 +1,7 @@
 <script lang="ts" setup>
-const { signIn } = useAuth(); // uses the default signIn function provided by nuxt-auth
+const { signIn } = useAuthClient();
+const { refresh } = useBetterAuth();
+
 const formData = reactive({
   email: "",
   password: "",
@@ -8,25 +10,21 @@ const formData = reactive({
 const login = async (e: Event) => {
   try {
     e.preventDefault();
-    const res = await signIn(
-      { ...formData },
-      { callbackUrl: "/home" } // Where the user will be redirected after a successiful login
-    );
-
-    console.log("res", res);
+    await signIn.email({
+      email: formData.email,
+      password: formData.password,
+    });
+    // Refresh auth state to update layout
+    await refresh();
+    // Redirect to home after successful login
+    await navigateTo('/');
   } catch (error) {
-    console.log("error", error);
+    console.error("Login failed:", error);
   }
 };
 
 definePageMeta({
   title: "Signin",
-  layout: "empty",
-  public: true,
-  auth: {
-    unauthenticatedOnly: true,
-    navigateAuthenticatedTo: "/",
-  },
 });
 </script>
 

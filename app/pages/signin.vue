@@ -8,9 +8,14 @@ const errorMessage = ref('');
 const handleSubmit = async () => {
   errorMessage.value = '';
   try {
-    await signIn.email({ email: email.value, password: password.value ,callbackURL:"/"});
+    await signIn.email({ 
+      email: email.value, 
+      password: password.value,
+      callbackURL: "/"
+    });
     
     // Handle successful sign-in (e.g., redirect or show a success message)
+    navigateTo('/');
   } catch (error) {
     errorMessage.value = 'Failed to sign in. Please check your credentials.';
   }

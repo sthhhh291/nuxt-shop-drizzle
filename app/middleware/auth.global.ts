@@ -1,13 +1,20 @@
-import { useAuthClient } from "~/composables/auth"
+export default defineNuxtRouteMiddleware(async (to) => {
+	// Only run on client-side to avoid SSR issues
+	if (process.server) return
 
-export default defineNuxtRouteMiddleware(async to => {
 	const isUserNavigatingToTheApp = to.path.startsWith('/') && !to.path.startsWith('/auth')
 	if (!isUserNavigatingToTheApp) {
 		return
 	}
 
-	const { data: loggedIn } = await useAuthClient().useSession(useFetch)
-	if (!loggedIn.value) {
+	const { isAuthenticated, loading } = useBetterAuth()
+	
+	// Wait for auth to finish loading
+	while (loading.value) {
+		await new Promise(resolve => setTimeout(resolve, 50))
+	}
+
+	if (!isAuthenticated.value) {
 		return navigateTo('/auth/login')
 	}
 })
