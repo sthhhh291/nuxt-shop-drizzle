@@ -67,6 +67,7 @@ export default defineEventHandler(async (event) => {
         const [newCustomer] = await db
           .insert(customers)
           .values({
+            id: id || undefined,
             first_name: first_name || "",
             last_name: last_name || "",
             notes: `Imported contact with ID ${id}`,

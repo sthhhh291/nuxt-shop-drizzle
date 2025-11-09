@@ -1,6 +1,7 @@
 import { db } from "../sqlite-service";
 import { cars, customers, customersRelations } from "../../db/schema";
 import { z } from "zod";
+import { ilike, like, or, sql} from "drizzle-orm";
 
 const customerSchema = z.object({
   first_name: z.string().min(1).max(50),
@@ -9,39 +10,59 @@ const customerSchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
-  if (event.req.method === "POST") {
-    const body = await readBody(event);
-    const parsedBody = customerSchema.safeParse(body);
-
-    if (!parsedBody.success) {
-      event.res.statusCode = 400;
-      return { error: "Invalid request", details: parsedBody.error.format() };
-    }
-
-    const { first_name, last_name, notes } = parsedBody.data;
-
-    const [newCustomer] = await db
-      .insert(customers)
-      .values({ first_name, last_name, notes })
-      .returning();
-
-    return { message: "Customer created successfully", customer: newCustomer };
-  } else if (event.req.method === "GET") {
-    // Use the relational query syntax with proper relations
-    const allCustomers = await db.query.customers.findMany({
-      with: {
-        cars: {
-          with: {
-            estimates: { with: { labor: true, parts: true, oil: true } },
+  if (event.req.method === "GET") {
+    const query = getQuery(event);
+    const page = Number(query.page || "1");
+    const search = query.search || "";
+    const limit = 20;
+    const offset = (page - 1) * limit;
+    
+    // Create the search condition for reuse
+    const searchCondition = sql`(first_name || ' ' || last_name) like ${'%' + search + '%'}`;
+    
+    // Run both queries in parallel for better performance
+    const [allCustomers, totalCountResult] = await Promise.all([
+      // Main query with pagination
+      db.query.customers.findMany({
+        where: searchCondition,
+        with: {
+          cars: {
+            with: {
+              estimates: { with: { labor: true, parts: true, oil: true } },
+            },
           },
-        }, // This should reference the relation name, not the table
-        phones: true,
-        emails: true,
-        addresses: true,
-      },
-    });
+          phones: true,
+          emails: true,
+          addresses: true,
+        },
+        orderBy: (customers, { asc }) => asc(customers.last_name),
+        limit: limit,
+        offset: offset,
+      }),
+      
+      // Count query for total records
+      db.select({ count: sql<number>`count(*)` })
+        .from(customers)
+        .where(searchCondition)
+    ]);
 
-    return { customers: allCustomers };
+    const totalCount = totalCountResult[0]?.count || 0;
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
+    return {
+      customers: allCustomers,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        limit,
+        hasNextPage,
+        hasPreviousPage,
+        offset
+      }
+    };
   } else {
     event.res.statusCode = 405; // Method Not Allowed
     return { error: "Method not allowed" };

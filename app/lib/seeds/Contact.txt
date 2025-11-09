@@ -1,3 +1,4 @@
+"id","last_name","first_name","bus_street","bus_city","bus_state","bus_zip","home_street","home_city","home_state","home_zip","bus_phone","home_phone","cell_phone","fax","other_phone","email"
 6,,,,,,,,,,,,,,,,
 10,"Lenzi","Allen",,,,,"#42 Steelcrest","Granite City","IL","62040-",,"(618) 797-6622",,,,
 11,"Carroll","Sharon",,,,,"2622 Nancy","Granite City","IL","62040-","(618) 451-5544",,,,,
