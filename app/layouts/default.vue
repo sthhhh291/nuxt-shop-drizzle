@@ -1,34 +1,38 @@
 <script setup lang="ts">
-const { session, loading, user, isAuthenticated } = useBetterAuth()
+const { session, loading, user, isAuthenticated } = useBetterAuth();
+
+// Create a reactive key that changes when auth state changes
+const authKey = computed(
+  () => `${isAuthenticated.value}-${user.value?.id || "none"}`
+);
 
 // Minimal logging only for authentication changes (not on every render)
-watch(
-  isAuthenticated,
-  (newAuth, oldAuth) => {
-    if (oldAuth !== undefined && oldAuth !== newAuth) {
-      console.log("Auth status changed:", newAuth);
-    }
+watch(isAuthenticated, (newAuth, oldAuth) => {
+  if (oldAuth !== undefined && oldAuth !== newAuth) {
+    console.log("Auth status changed:", newAuth);
   }
-);
+});
 </script>
 
 <template>
-  <div v-if="loading">Loading...</div>
-  <ul v-else-if="!isAuthenticated">
-    <NuxtLink to="/auth/login">Sign In</NuxtLink>
-    <NuxtLink to="/auth/signup">Sign Up</NuxtLink>
-  </ul>
-  <ul v-else>
-    <NuxtLink to="/">Home</NuxtLink>
-    <NuxtLink to="/estimates">Estimates</NuxtLink>
-    <NuxtLink to="/customers">Customers</NuxtLink>
-    <NuxtLink to="/cars">Cars</NuxtLink>
-    <Button disabled>Welcome, {{ user.name || user.email }}</Button>
-    <Signout />
-  </ul>
-  <main>
-    <NuxtPage />
-  </main>
+  <div :key="authKey">
+    <div v-if="loading">Loading...</div>
+    <ul v-else-if="!isAuthenticated">
+      <NuxtLink to="/auth/login">Sign In</NuxtLink>
+      <NuxtLink to="/auth/signup">Sign Up</NuxtLink>
+    </ul>
+    <ul v-else>
+      <NuxtLink to="/">Home</NuxtLink>
+      <NuxtLink to="/estimates">Estimates</NuxtLink>
+      <NuxtLink to="/customers">Customers</NuxtLink>
+      <NuxtLink to="/cars">Cars</NuxtLink>
+      <Button disabled>Welcome, {{ user?.name || user?.email }}</Button>
+      <Signout />
+    </ul>
+    <main>
+      <NuxtPage />
+    </main>
+  </div>
 </template>
 
 <style scoped>
