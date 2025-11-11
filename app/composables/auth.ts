@@ -8,7 +8,8 @@ export const useAuthClient = () => {
 const globalAuthState = reactive({
 	session: null as any,
 	loading: true,
-	initialized: false
+	initialized: false,
+	initPromise: null as Promise<void> | null
 })
 
 export const useBetterAuth = () => {
@@ -20,31 +21,35 @@ export const useBetterAuth = () => {
 	const session = computed(() => globalAuthState.session)
 	const loading = computed(() => globalAuthState.loading)
 	
-	// Initialize session data only once
+	// Initialize session data only once with promise caching
 	const initSession = async () => {
 		if (globalAuthState.initialized) return
+		if (globalAuthState.initPromise) return globalAuthState.initPromise
 		
-		try {
-			const result = await client.useSession(useFetch)
-			globalAuthState.session = result.data.value
-			globalAuthState.loading = result.isPending
-			globalAuthState.initialized = true
-			console.log('Auth initialized:', { user: globalAuthState.session?.user, loading: globalAuthState.loading })
-		} catch (error) {
-			console.error('Failed to initialize session:', error)
-			globalAuthState.loading = false
-			globalAuthState.initialized = true
-		}
+		globalAuthState.initPromise = (async () => {
+			try {
+				const result = await client.useSession(useFetch)
+				globalAuthState.session = result.data.value
+				globalAuthState.loading = result.isPending
+				globalAuthState.initialized = true
+			} catch (error) {
+				console.error('Failed to initialize session:', error)
+				globalAuthState.loading = false
+				globalAuthState.initialized = true
+			} finally {
+				globalAuthState.initPromise = null
+			}
+		})()
+		
+		return globalAuthState.initPromise
 	}
 	
 	// Refresh session data
 	const refresh = async () => {
-		console.log('Refreshing auth state...')
 		globalAuthState.loading = true
 		try {
 			const result = await client.useSession(useFetch)
 			globalAuthState.session = result.data.value
-			console.log('Auth refreshed:', { user: globalAuthState.session?.user })
 		} catch (error) {
 			console.error('Failed to refresh session:', error)
 			globalAuthState.session = null
@@ -55,21 +60,18 @@ export const useBetterAuth = () => {
 	
 	const signOut = async () => {
 		try {
-			console.log('Signing out...')
 			await client.signOut()
-			globalAuthState.session = null // Clear session immediately
-			console.log('Signed out, session cleared')
+			globalAuthState.session = null
 		} catch (error) {
 			console.error('Sign out failed:', error)
-			// Clear session anyway on error
 			globalAuthState.session = null
 		} finally {
 			globalAuthState.loading = false
 		}
 	}
 	
-	// Initialize on first use (client-side only)
-	if (process.client && !globalAuthState.initialized) {
+	// Initialize on first use (client-side only) - but only once
+	if (process.client && !globalAuthState.initialized && !globalAuthState.initPromise) {
 		nextTick(() => {
 			initSession()
 		})
@@ -81,7 +83,8 @@ export const useBetterAuth = () => {
 		user,
 		isAuthenticated,
 		signOut,
-		refresh
+		refresh,
+		initSession
 	}
 }
 

@@ -1,29 +1,14 @@
 <script setup lang="ts">
 const { session, loading, user, isAuthenticated } = useBetterAuth()
 
-// Watch for all auth state changes with debugging
-watch(
-  user,
-  (newUser) => {
-    console.log("Layout: User updated:", newUser);
-  },
-  { immediate: true }
-);
-
+// Minimal logging only for authentication changes (not on every render)
 watch(
   isAuthenticated,
-  (newAuth) => {
-    console.log("Layout: Authentication status:", newAuth);
-  },
-  { immediate: true }
-);
-
-watch(
-  loading,
-  (newLoading) => {
-    console.log("Layout: Loading status:", newLoading);
-  },
-  { immediate: true }
+  (newAuth, oldAuth) => {
+    if (oldAuth !== undefined && oldAuth !== newAuth) {
+      console.log("Auth status changed:", newAuth);
+    }
+  }
 );
 </script>
 
