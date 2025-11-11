@@ -9,20 +9,17 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
 	const { isAuthenticated, loading, initSession } = useBetterAuth()
 	
-	// Ensure auth is initialized, but don't block if it's already loading
+	// If not loading and not authenticated, try to initialize once
 	if (!loading.value && !isAuthenticated.value) {
-		// Try to initialize once more if not authenticated
 		await initSession()
 	}
 	
-	// Use a timeout instead of infinite loop
-	const maxWaitTime = 3000 // 3 seconds max
-	const startTime = Date.now()
-	
-	while (loading.value && (Date.now() - startTime) < maxWaitTime) {
-		await new Promise(resolve => setTimeout(resolve, 100))
+	// Give the auth system a moment to respond, but don't block indefinitely
+	if (loading.value) {
+		await new Promise(resolve => setTimeout(resolve, 300)) // Max 300ms wait
 	}
 
+	// After initialization attempt, redirect if still not authenticated
 	if (!isAuthenticated.value) {
 		return navigateTo('/auth/login')
 	}

@@ -1,56 +1,8 @@
 <script setup lang="ts">
-const route = useRoute();
-const router = useRouter();
-
-// Reactive query parameters
-const searchQuery = ref((route.query.search as string) || "");
-const currentPage = ref(parseInt((route.query.page as string) || "1"));
-
-// Watch for route changes and update local state
-watch(() => route.query, (newQuery) => {
-  searchQuery.value = (newQuery.search as string) || "";
-  currentPage.value = parseInt((newQuery.page as string) || "1");
+const { data: customersData, pending, refresh } = useFetch('/api/customers', {
+  default: () => ({ customers: [], pagination: {} }),
+  watch: [],
 });
-
-// Optimized fetch with key to prevent unnecessary requests
-const { data, refresh, pending } = await useFetch(`/api/customers`, {
-  key: 'customers',
-  query: computed(() => ({
-    search: searchQuery.value,
-    page: currentPage.value
-  })),
-  default: () => ({ customers: [], pagination: {} })
-});
-
-const customers = computed(() => {
-  return data.value?.customers || [];
-});
-
-const pagination = computed(() => {
-  return data.value?.pagination || {};
-});
-
-// Debounced search function
-const searchDebounce = ref<NodeJS.Timeout>();
-const updateSearch = () => {
-  clearTimeout(searchDebounce.value);
-  searchDebounce.value = setTimeout(async () => {
-    await router.push({ 
-      path: '/customers', 
-      query: { 
-        ...route.query, 
-        search: searchQuery.value,
-        page: '1' // Reset to first page on search
-      } 
-    });
-  }, 300);
-};
-
-const updateCustomers = async () => {
-  await refresh();
-};
-
-provide("refreshCustomers", refresh);
 </script>
 
 <template>
@@ -64,32 +16,32 @@ provide("refreshCustomers", refresh);
       />
       <div v-if="pending" class="loading">Searching...</div>
     </div>
-    
+
     <div class="customer-list">
-      <h1>Customers ({{ pagination.totalCount || 0 }})</h1>
-      
-      <div v-if="customers.length === 0 && !pending" class="no-results">
+      <h1>Customers ({{ customersData.pagination.totalCount || 0 }})</h1>
+
+      <div v-if="customersData.customers.length === 0 && !pending" class="no-results">
         No customers found
       </div>
-      
+
       <div v-else class="space-y-8">
-        <div v-for="customer in customers" :key="customer.id" class="border-b pb-2">
+        <div v-for="customer in customersData.customers" :key="customer.id" class="border-b pb-2">
           <h2 class="text-lg font-semibold">
             {{ customer.first_name }} {{ customer.last_name }}
           </h2>
         </div>
       </div>
-      
+
       <!-- Pagination -->
       <div v-if="pagination.totalPages && pagination.totalPages > 1" class="pagination">
-        <button 
-          :disabled="!pagination.hasPreviousPage" 
+        <button
+          :disabled="!pagination.hasPreviousPage"
           @click="router.push({ query: { ...route.query, page: String(currentPage - 1) } })"
         >
           Previous
         </button>
         <span>Page {{ pagination.currentPage }} of {{ pagination.totalPages }}</span>
-        <button 
+        <button
           :disabled="!pagination.hasNextPage"
           @click="router.push({ query: { ...route.query, page: String(currentPage + 1) } })"
         >
@@ -97,7 +49,7 @@ provide("refreshCustomers", refresh);
         </button>
       </div>
     </div>
-    
+
     <addCustomerComponent @customerAdded="updateCustomers" />
   </div>
 </template>

@@ -18,7 +18,13 @@ export default defineEventHandler(async (event) => {
     const offset = (page - 1) * limit;
     
     // Create the search condition for reuse
-    const searchCondition = sql`(first_name || ' ' || last_name) like ${'%' + search + '%'}`;
+    const searchCondition = search 
+      ? or(
+          ilike(customers.first_name, `%${search}%`),
+          ilike(customers.last_name, `%${search}%`),
+          sql`(${customers.first_name} || ' ' || ${customers.last_name}) like ${'%' + search + '%'}`
+        )
+      : undefined;
     
     // Run both queries in parallel for better performance
     const [allCustomers, totalCountResult] = await Promise.all([

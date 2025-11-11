@@ -3,7 +3,7 @@ import { type Estimate, estimates } from "~~/db/schema";
 
 export default eventHandler(async (event) => {
   try {
-    const estimatesList: Estimate[] = await db.select().from(estimates).all();
+    const estimatesList: Estimate[] = await db.select().from(estimates).limit(20);
 
     return estimatesList;
   } catch (error: unknown) {

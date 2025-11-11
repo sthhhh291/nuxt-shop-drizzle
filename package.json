@@ -11,8 +11,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "db:push": "drizzle-kit push",
-    "seed:contacts": "tsx scripts/seed-contact.ts"
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",
@@ -37,7 +36,6 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
-    "csv-parse": "^6.1.0",
     "drizzle-kit": "^0.31.5",
     "tsx": "^4.20.6"
   }

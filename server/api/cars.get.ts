@@ -4,7 +4,7 @@ import { cars } from "../../db/schema";
 
 export default eventHandler(async (event) => {
   try {
-    const allCars = await db.select().from(cars);
+    const allCars = await db.select().from(cars).limit(20);
     return allCars;
   } catch (error: unknown) {
     event.res.statusCode = 500;

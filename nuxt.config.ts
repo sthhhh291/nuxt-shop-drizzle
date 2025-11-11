@@ -17,12 +17,6 @@ export default defineNuxtConfig({
     optimizeDeps: {
       // Pre-bundle these dependencies
       include: ['better-auth', 'drizzle-orm']
-    },
-    build: {
-      // Exclude Node.js specific packages from client bundle
-      rollupOptions: {
-        external: ['csv-parse', 'csv-parse/sync', 'fs', 'path']
-      }
     }
   },
   
