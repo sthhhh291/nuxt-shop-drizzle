@@ -1,13 +1,7 @@
 import { db } from "../sqlite-service";
-import { cars, customers, customersRelations } from "../../db/schema";
+import { customers } from "../../db/schema";
 import { z } from "zod";
-import { ilike, like, or, sql} from "drizzle-orm";
-
-const customerSchema = z.object({
-  first_name: z.string().min(1).max(50),
-  last_name: z.string().min(1).max(50),
-  notes: z.string().max(255).optional(),
-});
+import { like, or, sql } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   if (event.req.method === "GET") {
@@ -16,40 +10,38 @@ export default defineEventHandler(async (event) => {
     const search = query.search || "";
     const limit = 20;
     const offset = (page - 1) * limit;
-    
-    // Create the search condition for reuse
-    const searchCondition = search 
-      ? or(
-          ilike(customers.first_name, `%${search}%`),
-          ilike(customers.last_name, `%${search}%`),
-          sql`(${customers.first_name} || ' ' || ${customers.last_name}) like ${'%' + search + '%'}`
+
+    // Create the search condition for reuse (SQLite compatible)
+    const searchCondition =
+      search ?
+        or(
+          like(customers.first_name, `%${search}%`),
+          like(customers.last_name, `%${search}%`),
+          sql`(${customers.first_name} || ' ' || ${customers.last_name}) like ${"%" + search + "%"}`
         )
       : undefined;
-    
+
     // Run both queries in parallel for better performance
     const [allCustomers, totalCountResult] = await Promise.all([
-      // Main query with pagination
-      db.query.customers.findMany({
-        where: searchCondition,
-        with: {
-          cars: {
-            with: {
-              estimates: { with: { labor: true, parts: true, oil: true } },
-            },
-          },
-          phones: true,
-          emails: true,
-          addresses: true,
-        },
-        orderBy: (customers, { asc }) => asc(customers.last_name),
-        limit: limit,
-        offset: offset,
-      }),
-      
-      // Count query for total records
-      db.select({ count: sql<number>`count(*)` })
+      // Main query with pagination - only get basic customer info
+      db
+        .select({
+          id: customers.id,
+          first_name: customers.first_name,
+          last_name: customers.last_name,
+          notes: customers.notes,
+        })
         .from(customers)
         .where(searchCondition)
+        .orderBy(customers.last_name)
+        .limit(limit)
+        .offset(offset),
+
+      // Count query for total records
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(customers)
+        .where(searchCondition),
     ]);
 
     const totalCount = totalCountResult[0]?.count || 0;
@@ -66,8 +58,8 @@ export default defineEventHandler(async (event) => {
         limit,
         hasNextPage,
         hasPreviousPage,
-        offset
-      }
+        offset,
+      },
     };
   } else {
     event.res.statusCode = 405; // Method Not Allowed
