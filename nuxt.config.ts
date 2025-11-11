@@ -10,8 +10,30 @@ export default defineNuxtConfig({
     "@nuxt/scripts",
     "@nuxt/test-utils",
     "@nuxt/ui",
-    // "@sidebase/nuxt-auth",
   ],
+  
+  // Optimize build performance and bundle size
+  vite: {
+    optimizeDeps: {
+      // Pre-bundle these dependencies
+      include: ['better-auth', 'drizzle-orm']
+    },
+    build: {
+      // Exclude Node.js specific packages from client bundle
+      rollupOptions: {
+        external: ['csv-parse', 'csv-parse/sync', 'fs', 'path']
+      }
+    }
+  },
+  
+  // Server-side rendering optimizations
+  ssr: true,
+  nitro: {
+    // Ensure Node.js packages stay server-side
+    experimental: {
+      wasm: true
+    }
+  },
   // auth: {
   //   // globalAppMiddleware: true,
   //   baseURL: process.env.NUXT_PUBLIC_API_URL,

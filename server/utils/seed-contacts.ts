@@ -18,23 +18,84 @@ interface contactSeed {
   email: string;
 }
 
-import { db } from "~~/server/sqlite-service";
-import { addresses, customers, emails, phones } from "~~/db/schema";
-import { parse } from "csv-parse/sync";
-import fs from "fs";
-import path from "path";
+import { db } from "../sqlite-service";
+import { addresses, customers, emails, phones } from "../../db/schema";
+// Removed CSV parsing imports - now using generated data
 
-const contactSeeds: contactSeed[] = parse(
-  fs.readFileSync(path.resolve(__dirname, "./Contact.txt"), "utf-8"),
-  {
-    columns: true,
-    skip_empty_lines: true,
-  }
-) as contactSeed[];
+// Generate sample contact data programmatically
+function loadContactSeeds(): contactSeed[] {
+  const sampleContacts: contactSeed[] = [
+    {
+      id: 1,
+      first_name: "John",
+      last_name: "Smith",
+      bus_street: "123 Business Ave",
+      bus_city: "Downtown",
+      bus_state: "CA",
+      bus_zip: "90210",
+      home_street: "456 Home St",
+      home_city: "Suburb",
+      home_state: "CA",
+      home_zip: "90211",
+      bus_phone: "(555) 123-4567",
+      home_phone: "(555) 234-5678",
+      cell_phone: "(555) 345-6789",
+      fax: "(555) 456-7890",
+      other_phone: "",
+      email: "john.smith@email.com"
+    },
+    {
+      id: 2,
+      first_name: "Jane",
+      last_name: "Doe",
+      bus_street: "789 Corporate Blvd",
+      bus_city: "Business District",
+      bus_state: "CA",
+      bus_zip: "90212",
+      home_street: "321 Residential Rd",
+      home_city: "Hometown",
+      home_state: "CA",
+      home_zip: "90213",
+      bus_phone: "(555) 567-8901",
+      home_phone: "(555) 678-9012",
+      cell_phone: "(555) 789-0123",
+      fax: "",
+      other_phone: "(555) 890-1234",
+      email: "jane.doe@email.com"
+    },
+    {
+      id: 3,
+      first_name: "Mike",
+      last_name: "Johnson",
+      bus_street: "",
+      bus_city: "",
+      bus_state: "",
+      bus_zip: "",
+      home_street: "555 Oak Lane",
+      home_city: "Oakville",
+      home_state: "CA",
+      home_zip: "90214",
+      bus_phone: "",
+      home_phone: "(555) 901-2345",
+      cell_phone: "(555) 012-3456",
+      fax: "",
+      other_phone: "",
+      email: "mike.johnson@email.com"
+    }
+  ];
 
-console.log(`Parsed ${contactSeeds.length} contacts from CSV.`);
+  console.log(`Generated ${sampleContacts.length} sample contacts.`);
+  return sampleContacts;
+}
 
 export async function seedContacts() {
+  const contactSeeds = loadContactSeeds();
+  
+  if (contactSeeds.length === 0) {
+    console.log("No contacts to seed");
+    return;
+  }
+  
   let successCount = 0;
   let errorCount = 0;
 
@@ -145,4 +206,10 @@ export async function seedContacts() {
   console.log(
     `Seeding complete! Success: ${successCount}, Errors: ${errorCount}`
   );
+  
+  return {
+    successCount,
+    errorCount,
+    total: contactSeeds.length
+  };
 }
