@@ -8,16 +8,6 @@ import {
 import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 import { relations, sql } from "drizzle-orm";
 
-// export const users = sqliteTable("users", {
-//   id: integer("id").primaryKey({ autoIncrement: true }),
-//   name: text("name").notNull(),
-//   email: text("email").notNull().unique(),
-//   passwordHash: text("password_hash").notNull(),
-// });
-
-// export type User = InferSelectModel<typeof users>;
-// export type InsertUser = InferInsertModel<typeof users>;
-
 export const customers = sqliteTable("customers", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   first_name: text("first_name"),
@@ -27,6 +17,19 @@ export const customers = sqliteTable("customers", {
 
 export type Customer = InferSelectModel<typeof customers>;
 export type InsertCustomer = InferInsertModel<typeof customers>;
+
+export const employees = sqliteTable("employees", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  customer_id: integer("customer_id")
+    .notNull()
+    .references(() => customers.id, { onDelete: "cascade" }),
+  position: text("position").notNull(),
+  hire_date: text("hire_date").notNull(),
+  termination_date: text("termination_date"),
+});
+
+export type Employee = InferSelectModel<typeof employees>;
+export type InsertEmployee = InferInsertModel<typeof employees>;
 
 export const phones = sqliteTable("phones", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -96,6 +99,8 @@ export const estimates = sqliteTable("estimates", {
   car_id: integer("car_id")
     .notNull()
     .references(() => cars.id, { onDelete: "cascade" }),
+  employee_id: integer("employee_id")
+    .references(() => employees.id, { onDelete: "cascade" }),
 });
 
 export type Estimate = InferSelectModel<typeof estimates>;
@@ -207,6 +212,14 @@ export const customersRelations = relations(customers, ({ many }) => ({
   cars: many(cars),
 }));
 
+export const employeesRelations = relations(employees, ({ one ,many}) => ({
+  customer: one(customers, {
+    fields: [employees.customer_id],
+    references: [customers.id],
+  }),
+  estimates: many(estimates),
+}));
+
 export const phonesRelations = relations(phones, ({ one }) => ({
   customer: one(customers, {
     fields: [phones.customer_id],
@@ -240,6 +253,10 @@ export const estimatesRelations = relations(estimates, ({ many, one }) => ({
   car: one(cars, {
     fields: [estimates.car_id],
     references: [cars.id],
+  }),
+  employee: one(employees, {
+    fields: [estimates.employee_id],
+    references: [employees.id],
   }),
   labor: many(labor),
   parts: many(parts),
