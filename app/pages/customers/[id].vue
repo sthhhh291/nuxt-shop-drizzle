@@ -15,7 +15,17 @@ const customer = computed(() => {
 </script>
 <template>
   <div>
-    <customerCardComponent v-if="customer" :customer="customer" />
+    <div class="grid-2">
+      <customerCardComponent v-if="customer" :customer="customer" />
+      <div class="cars card">
+        <NuxtLink
+          v-if="customer && customer.cars"
+          v-for="car in customer.cars"
+          :to="`/cars/${car.id}`">
+          {{ car.year }} {{ car.make }} {{ car.model }}
+        </NuxtLink>
+      </div>
+    </div>
     <div v-if="!showForm" id="Buttons">
       <!-- placeholder for action Buttons -->
       <Button @click="router.push(`/customers/addPhone/${customer!.id}`)">
@@ -33,20 +43,27 @@ const customer = computed(() => {
     </div>
     <div class="">
       <h2>Cars</h2>
-      <NuxtLink
-        v-if="customer && customer.cars"
-        v-for="car in customer.cars"
-        :to="`/cars/${car.id}`">
-        <CarCardComponent :car="{ ...car, customer: customer }" />
-      </NuxtLink>
     </div>
   </div>
 </template>
 <style scoped>
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1em;
+}
 .customer-details {
   border: 1px solid #ccc;
   padding: 1em;
   border-radius: 5px;
+}
+.cars {
+  border: 1px solid #ccc;
+  padding: 1em;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
 }
 h1 {
   font-size: 2em;
