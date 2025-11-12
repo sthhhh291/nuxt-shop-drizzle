@@ -1,4 +1,4 @@
-"id","estimate_id","quantity","description","price"
+id,estimate_id,quantity,description,price
 28,,,,
 29,,,,
 30,,,,
