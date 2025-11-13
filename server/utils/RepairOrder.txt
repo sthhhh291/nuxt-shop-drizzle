@@ -1,4 +1,4 @@
-id,car_id,datee,miles,pass,pass,pass,employee_id
+id,car_id,date,miles,pass,pass,pass,employee_id
 -2323626,7666,7/7/2022 0:00:00,,0,,,"1"
 -18346,6544,3/14/2019 0:00:00,,0,,,"1"
 0,10297,7/22/2028 0:00:00,,0,,,

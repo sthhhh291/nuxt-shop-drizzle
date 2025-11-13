@@ -7,13 +7,14 @@ interface EstimateSeed {
   id: number;
   car_id: number;
   date: string;
-  estimate_type: string;
-  hours_taken: number;
+  // miles: string;
+  // hours_taken: number;
   miles: number;
-  private_notes: string;
-  public_notes: string;
+  employee_id: number;
+  // private_notes: string;
+  // public_notes: string;
 }
-
+// id,car_id,date,miles,pass,pass,pass,employee_id
 function loadEstimateSeeds(): EstimateSeed[] {
   const sampleEstimates: EstimateSeed[] = parse(
     fs.readFileSync("./server/utils/RepairOrder.txt", "utf-8"),
@@ -41,21 +42,19 @@ export async function seedEstimates() {
         id,
         car_id,
         date,
-        estimate_type,
-        hours_taken,
         miles,
-        private_notes,
-        public_notes,
+        employee_id
       } = estimate;
 
       await db.insert(estimates).values({
+        id,
         car_id,
         date,
-        estimate_type,
-        hours_taken,
+        estimate_type:"Repair Order",
+        hours_taken: 0,
         miles,
-        private_notes,
-        public_notes,
+        private_notes: "",
+        public_notes: "",
       });
 
       successCount++;

@@ -1,59 +1,23 @@
 import { db } from "../sqlite-service";
 import { labor } from "../../db/schema";
+import { parse } from "csv-parse/sync";
+import * as fs from "fs";
 
 interface LaborSeed {
+  id:number;
   estimate_id: number;
   description: string;
-  hours: number;
-  rate: number;
+  // hours: number;
+  // rate: number;
   price: number;
 }
 
+// id,estimate_id,pass,description,price
 function loadLaborSeeds(): LaborSeed[] {
-  const sampleLabor: LaborSeed[] = [
-    {
-      estimate_id: 1,
-      description: "Oil change service",
-      hours: 0.5,
-      rate: 120.00,
-      price: 60.00
-    },
-    {
-      estimate_id: 2,
-      description: "Brake system inspection",
-      hours: 1.0,
-      rate: 120.00,
-      price: 120.00
-    },
-    {
-      estimate_id: 3,
-      description: "Transmission service - drain and fill",
-      hours: 1.5,
-      rate: 120.00,
-      price: 180.00
-    },
-    {
-      estimate_id: 3,
-      description: "Transmission filter replacement",
-      hours: 1.0,
-      rate: 120.00,
-      price: 120.00
-    },
-    {
-      estimate_id: 4,
-      description: "General vehicle inspection",
-      hours: 1.5,
-      rate: 120.00,
-      price: 180.00
-    },
-    {
-      estimate_id: 5,
-      description: "Tire rotation and balancing",
-      hours: 0.75,
-      rate: 120.00,
-      price: 90.00
-    }
-  ];
+  const sampleLabor: LaborSeed[] = parse(
+    fs.readFileSync("./server/utils/Labor.txt", "utf-8"),
+    { columns: true, skip_empty_lines: true }
+  );
 
   console.log(`Generated ${sampleLabor.length} sample labor entries.`);
   return sampleLabor;
@@ -72,13 +36,13 @@ export async function seedLabor() {
 
   for (const laborEntry of laborSeeds) {
     try {
-      const { estimate_id, description, hours, rate, price } = laborEntry;
+      const { estimate_id, description,  price } = laborEntry;
       
       await db.insert(labor).values({
         estimate_id,
         description,
-        hours,
-        rate,
+        hours:0,
+        rate:0,
         price,
       });
       

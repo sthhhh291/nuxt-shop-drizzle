@@ -1,38 +1,22 @@
 import { db } from "../sqlite-service";
 import { oil } from "../../db/schema";
+import { parse } from "csv-parse/sync";
+import * as fs from "fs";
 
 interface OilSeed {
+  id: number;
   estimate_id: number;
-  type: string;
+  description: string;
   quantity: number;
-  price_per_unit: number;
-  cost: number;
+  price: number;
 }
+// id,estimate_id,quantity,description,price
 
 function loadOilSeeds(): OilSeed[] {
-  const sampleOil: OilSeed[] = [
-    {
-      estimate_id: 1,
-      type: "Full Synthetic 5W-30",
-      quantity: 5.0,
-      price_per_unit: 12.00,
-      cost: 8.50
-    },
-    {
-      estimate_id: 3,
-      type: "ATF+4 Transmission Fluid",
-      quantity: 4.0,
-      price_per_unit: 18.00,
-      cost: 12.00
-    },
-    {
-      estimate_id: 4,
-      type: "Conventional 5W-20",
-      quantity: 4.5,
-      price_per_unit: 8.00,
-      cost: 5.50
-    }
-  ];
+  const sampleOil: OilSeed[] = parse(
+    fs.readFileSync("./server/utils/oil.txt", "utf-8"),
+    { columns: true, skip_empty_lines: true }
+  );
 
   console.log(`Generated ${sampleOil.length} sample oil entries.`);
   return sampleOil;
@@ -51,14 +35,15 @@ export async function seedOil() {
 
   for (const oilEntry of oilSeeds) {
     try {
-      const { estimate_id, type, quantity, price_per_unit, cost } = oilEntry;
+      const { estimate_id, description, quantity, price, id } = oilEntry;
       
       await db.insert(oil).values({
+        id,
         estimate_id,
-        type,
+        type: description,
         quantity,
-        price_per_unit,
-        cost,
+        price_per_unit: price,
+        cost:0,
       });
       
       successCount++;
@@ -67,7 +52,7 @@ export async function seedOil() {
       }
     } catch (error) {
       errorCount++;
-      console.error(`Error processing oil entry ${oilEntry.type}:`, error);
+      console.error(`Error processing oil entry ${oilEntry.description}:`, error);
     }
   }
 
