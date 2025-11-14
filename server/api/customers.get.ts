@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event);
     const page = Number(query.page || "1");
     const search = query.search || "";
-    const limit = 20;
+    const limit = Number(query.limit || "20");
     const offset = (page - 1) * limit;
 
     // Create the search condition for reuse (SQLite compatible)
