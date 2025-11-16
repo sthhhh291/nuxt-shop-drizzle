@@ -6,6 +6,20 @@ const router = useRouter();
 const searchQuery = ref((route.query.search as string) || "");
 const currentPage = computed(() => Number(route.query.page) || 1);
 
+// Modal state
+const isAddCustomerOpen = ref(false);
+
+// Pagination handler
+const handlePageChange = (page: number) => {
+  console.log("Page changed to:", page);
+  router.push({
+    query: {
+      ...route.query,
+      page: page.toString(),
+    },
+  });
+};
+
 // Debounced search function
 let searchTimeout: NodeJS.Timeout | null = null;
 const debouncedSearch = () => {
@@ -17,16 +31,27 @@ const debouncedSearch = () => {
       query: {
         ...route.query,
         search: searchQuery.value || undefined,
-        page: "1", // Reset to first page on new
+        page: "1", // Reset to first page on new search
       },
     });
-    // search logic
   }, 300);
 };
 
 // Update search function
 const updateSearch = () => {
   debouncedSearch();
+};
+
+// Clear search function
+const clearSearch = () => {
+  searchQuery.value = "";
+  router.push({
+    query: {
+      ...route.query,
+      search: undefined,
+      page: "1",
+    },
+  });
 };
 
 const {
@@ -53,142 +78,189 @@ const {
   watch: [currentPage, () => route.query.search],
 });
 
+// Handle customer added
+const handleCustomerAdded = () => {
+  refresh();
+  isAddCustomerOpen.value = false;
+};
+
 // Update customers function for add customer component
 const updateCustomers = () => {
   refresh();
 };
+
+// go to new page when currentPage changes
+const changePage = (newPage: number) => {
+  return {
+    query: {
+      ...route.query,
+      page: newPage.toString(),
+    },
+  };
+};
 </script>
 
 <template>
-  <div class="container">
-    <div class="search-section">
-      <input
-        v-model="searchQuery"
-        placeholder="Search customers..."
-        @input="updateSearch"
-        @keyup.enter="updateSearch" />
-      <div v-if="pending" class="loading">Searching...</div>
+  <UContainer class="py-8">
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          Customers
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">
+          Manage your customer database
+          <span v-if="(customersData as any)?.pagination?.totalCount" class="text-sm">
+            ({{ (customersData as any).pagination.totalCount }} total)
+          </span>
+        </p>
+      </div>
+      
+      <!-- Add Customer Modal Trigger -->
+      <UButton 
+        color="primary" 
+        size="lg"
+        icon="i-heroicons-plus"
+        @click="isAddCustomerOpen = true"
+      >
+        Add Customer
+      </UButton>
     </div>
 
-    <CustomersComponent
-      :customers="customersData.customers"
-      class="customer-list">
-      <template #no-results>
-        <div class="no-results"> No customers found. </div>
-      </template>
-    </CustomersComponent>
-    <PaginationComponent
-      :current-page="customersData.pagination.currentPage"
-      :total-pages="customersData.pagination.totalPages"
-      :has-next-page="customersData.pagination.hasNextPage"
-      :has-previous-page="customersData.pagination.hasPreviousPage"
-      @page-changed="
-        (newPage) => {
-          router.push({
-            query: {
-              ...route.query,
-              page: newPage,
-            },
-          });
-        }
-      "
-      class="pagination" />
+    <!-- Search Section -->
+    <UCard class="mb-6">
+      <div class="flex flex-col sm:flex-row gap-4">
+        <div class="flex-1">
+          <UInput
+            v-model="searchQuery"
+            placeholder="Search customers by name..."
+            icon="i-heroicons-magnifying-glass"
+            size="lg"
+            @input="updateSearch"
+            @keyup.enter="updateSearch"
+          />
+        </div>
+        <UButton
+          v-if="searchQuery"
+          variant="outline"
+          color="neutral"
+          icon="i-heroicons-x-mark"
+          @click="clearSearch"
+        >
+          Clear
+        </UButton>
+      </div>
+      
+      <!-- Loading State -->
+      <div v-if="pending" class="flex items-center gap-2 mt-4 text-primary-500">
+        <UIcon name="i-heroicons-arrow-path" class="animate-spin" />
+        <span>Searching...</span>
+      </div>
+    </UCard>
 
-    <AddCustomerComponent @customerAdded="updateCustomers" />
-  </div>
+    <!-- Customers List -->
+    <UCard v-if="(customersData as any)?.customers?.length > 0">
+      <template #header>
+        <h2 class="text-xl font-semibold">Customer List</h2>
+      </template>
+      
+      <div class="divide-y divide-gray-200 dark:divide-gray-700">
+        <div
+          v-for="customer in (customersData as any).customers"
+          :key="customer.id"
+          class="py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        >
+          <NuxtLink
+            :to="`/customers/${customer.id}`"
+            class="block group"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <UAvatar
+                  :alt="`${customer.first_name} ${customer.last_name}`"
+                  size="md"
+                  class="bg-primary-500 dark:bg-primary-400"
+                >
+                  {{ customer.first_name?.[0] }}{{ customer.last_name?.[0] }}
+                </UAvatar>
+                
+                <div>
+                  <h3 class="font-medium text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                    {{ customer.first_name }} {{ customer.last_name }}
+                  </h3>
+                  <p v-if="customer.notes" class="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+                    {{ customer.notes }}
+                  </p>
+                </div>
+              </div>
+              
+              <UIcon 
+                name="i-heroicons-chevron-right" 
+                class="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors"
+              />
+            </div>
+          </NuxtLink>
+        </div>
+      </div>
+    </UCard>
+
+    <!-- Empty State -->
+    <UCard v-else-if="!pending">
+      <div class="text-center py-12">
+        <UIcon name="i-heroicons-users" class="text-4xl text-gray-400 mx-auto mb-4" />
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          {{ searchQuery ? 'No customers found' : 'No customers yet' }}
+        </h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-6">
+          {{ searchQuery 
+            ? `No customers match "${searchQuery}". Try a different search term.`
+            : 'Get started by adding your first customer.'
+          }}
+        </p>
+        <UButton
+          v-if="!searchQuery"
+          color="primary"
+          icon="i-heroicons-plus"
+          @click="isAddCustomerOpen = true"
+        >
+          Add Your First Customer
+        </UButton>
+      </div>
+    </UCard>
+
+    <!-- Pagination -->
+    <div v-if="(customersData as any)?.pagination?.totalPages > 1" class="mt-6">
+      <UPagination
+        v-model="currentPage"
+        :page-count="(customersData as any).pagination.totalPages"
+        :total="(customersData as any).pagination.totalCount"
+        :to="changePage"
+        show-last
+        show-first
+        @update:model-value="handlePageChange"
+      />
+    </div>
+
+    <!-- Add Customer Modal -->
+    <UModal v-model="isAddCustomerOpen">
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Add New Customer</h3>
+            <UButton
+              color="neutral"
+              variant="ghost"
+              icon="i-heroicons-x-mark-20-solid"
+              @click="isAddCustomerOpen = false"
+            />
+          </div>
+        </template>
+
+        <AddCustomerComponent @customerAdded="handleCustomerAdded" />
+      </UCard>
+    </UModal>
+  </UContainer>
 </template>
 
 <style scoped>
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 2rem;
-}
-
-.search-section {
-  grid-column: 1 / -1;
-  margin-bottom: 1rem;
-}
-
-.search-section input {
-  width: 100%;
-  max-width: 400px;
-  padding: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  font-size: 1rem;
-}
-
-.loading {
-  color: #6b7280;
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
-}
-
-.customer-list {
-  min-height: 200px;
-}
-
-.no-results {
-  color: #6b7280;
-  text-align: center;
-  padding: 2rem;
-  font-style: italic;
-}
-
-.space-y-8 > * + * {
-  margin-top: 2rem;
-}
-
-.border-b {
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.pb-2 {
-  padding-bottom: 0.5rem;
-}
-
-h1 {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  color: #1f2937;
-}
-
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding: 1rem;
-}
-
-.pagination button {
-  padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  background: white;
-  color: #374151;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.pagination button:hover:not(:disabled) {
-  background: #f3f4f6;
-  border-color: #9ca3af;
-}
-
-.pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination span {
-  color: #6b7280;
-  font-weight: 500;
-}
 </style>

@@ -1,53 +1,180 @@
 <script setup lang="ts">
 import type { Labor } from "~~/db/schema";
+
 const router = useRouter();
+const toast = useToast();
+
 const props = defineProps<{
   labor: Labor[];
 }>();
 
-const emit = defineEmits(["emit"]);
+const emit = defineEmits<{
+  emit: [];
+}>();
 
 const laborRef = ref<Labor[]>(props.labor);
-console.log("Labor data in component:", laborRef.value);
-// const refreshNuxtData = useNuxtApp().$refreshNuxtData;
 
 const deleteLabor = async (id: number) => {
   try {
-    if (confirm("Are you sure you want to delete this labor entry?")) {
-      await useFetch(`/api/labor/${id}`, {
-        method: "DELETE",
-      });
-      laborRef.value = laborRef.value.filter((lab) => lab.id !== id);
-      emit("emit");
-      // laborRef.value = { ...laborRef.value };
-      // router.go(0); // Refresh the page to reflect changes
-    }
+    await useFetch(`/api/labor/${id}`, {
+      method: "DELETE",
+    });
+    laborRef.value = laborRef.value.filter((lab) => lab.id !== id);
+    emit("emit");
+    toast.add({
+      title: 'Success',
+      description: 'Labor entry deleted successfully',
+      color: 'green'
+    });
   } catch (error) {
     console.error("Error deleting labor:", error);
+    toast.add({
+      title: 'Error',
+      description: 'Failed to delete labor entry',
+      color: 'red'
+    });
   }
 };
+
+const columns = [
+  {
+    key: 'description',
+    label: 'Description',
+    sortable: true
+  },
+  {
+    key: 'hours',
+    label: 'Hours',
+    sortable: true
+  },
+  {
+    key: 'price',
+    label: 'Price',
+    sortable: true
+  },
+  {
+    key: 'actions',
+    label: 'Actions'
+  }
+];
+
+const items = computed(() => 
+  laborRef.value.map(lab => ({
+    ...lab,
+    formattedPrice: formatCurrency(lab.price)
+  }))
+);
+
+const actions = [
+  [{
+    key: 'edit',
+    label: 'Edit',
+    icon: 'i-heroicons-pencil-square',
+    click: (row: any) => router.push(`/labor/${row.id}/edit`)
+  }],
+  [{
+    key: 'delete',
+    label: 'Delete',
+    icon: 'i-heroicons-trash',
+    color: 'red' as const,
+    click: (row: any) => deleteLabor(row.id)
+  }]
+];
 </script>
 
 <template>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Description</th>
-        <th>Hours</th>
-        <th>Price</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="lab in laborRef" :key="lab.id">
-        <td>{{ lab.description }}</td>
-        <td>{{ lab.hours }}</td>
-        <td>{{ formatCurrency(lab.price) }}</td>
-        <td>
-          <Button @click="router.push(`/labor/${lab.id}/edit`)">Edit</Button>
-          <Button @click="deleteLabor(lab.id)">Delete</Button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="space-y-4">
+    <UTable 
+      :rows="items" 
+      :columns="columns"
+      :ui="{
+        wrapper: 'relative overflow-x-auto',
+        base: 'min-w-full table-auto',
+        divide: 'divide-y divide-gray-200 dark:divide-gray-800',
+        thead: 'bg-gray-50 dark:bg-gray-800/50',
+        tbody: 'bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800',
+        tr: {
+          base: 'hover:bg-gray-50 dark:hover:bg-gray-800/50',
+        },
+        th: {
+          base: 'text-left rtl:text-right px-3 py-3.5',
+          padding: 'px-3 py-3.5',
+          color: 'text-gray-900 dark:text-white',
+          font: 'font-semibold',
+          size: 'text-sm'
+        },
+        td: {
+          base: 'whitespace-nowrap px-3 py-3',
+          padding: 'px-3 py-4',
+          color: 'text-gray-900 dark:text-white',
+          font: '',
+          size: 'text-sm'
+        }
+      }"
+      class="w-full"
+    >
+      <template #description-data="{ row }">
+        <div class="flex items-center space-x-3">
+          <div class="shrink-0">
+            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+              <UIcon name="i-heroicons-wrench-screwdriver" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </div>
+          </div>
+          <div>
+            <div class="font-medium text-gray-900 dark:text-white">
+              {{ row.description }}
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <template #hours-data="{ row }">
+        <div class="flex items-center space-x-2">
+          <UIcon name="i-heroicons-clock" class="w-4 h-4 text-gray-400" />
+          <span class="font-medium">{{ row.hours }}</span>
+          <span class="text-xs text-gray-500">hrs</span>
+        </div>
+      </template>
+
+      <template #price-data="{ row }">
+        <div class="flex items-center space-x-2">
+          <UIcon name="i-heroicons-currency-dollar" class="w-4 h-4 text-green-500" />
+          <span class="font-semibold text-green-600 dark:text-green-400">
+            {{ row.formattedPrice }}
+          </span>
+        </div>
+      </template>
+
+      <template #actions-data="{ row }">
+        <div class="flex items-center space-x-2">
+          <UButton
+            size="xs"
+            color="blue"
+            variant="soft"
+            icon="i-heroicons-pencil-square"
+            @click="router.push(`/labor/${row.id}/edit`)"
+          >
+            Edit
+          </UButton>
+          <UButton
+            size="xs"
+            color="red"
+            variant="soft"
+            icon="i-heroicons-trash"
+            @click="deleteLabor(row.id)"
+          >
+            Delete
+          </UButton>
+        </div>
+      </template>
+    </UTable>
+
+    <div v-if="!laborRef.length" class="text-center py-12">
+      <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+        <UIcon name="i-heroicons-wrench-screwdriver" class="w-8 h-8 text-gray-400" />
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Labor Entries</h3>
+      <p class="text-gray-500 dark:text-gray-400 mb-4">No labor entries have been added yet.</p>
+    </div>
+  </div>
 </template>

@@ -1,90 +1,128 @@
 <script setup lang="ts">
 import { z } from "zod";
 
-const first_name = ref("");
-const last_name = ref("");
-const notes = ref("");
-
 const customerSchema = z.object({
-  first_name: z.string().min(2).max(100),
-  last_name: z.string().min(2).max(100),
-  notes: z.string().max(500).optional(),
+  first_name: z.string().min(2, "First name must be at least 2 characters").max(100),
+  last_name: z.string().min(2, "Last name must be at least 2 characters").max(100),
+  notes: z.string().max(500, "Notes must be less than 500 characters").optional(),
 });
 
-const emit = defineEmits(["customerAdded"]);
-const refreshCustomers = inject("refreshCustomers");
+const emit = defineEmits(["customerAdded", "cancel"]);
+const isSubmitting = ref(false);
+const message = ref<{ type: 'success' | 'error'; text: string } | null>(null);
 
-const addCustomer = async () => {
+// Form state
+const formState = reactive({
+  first_name: "",
+  last_name: "",
+  notes: "",
+});
+
+const addCustomer = async (event: any) => {
+  isSubmitting.value = true;
+  message.value = null;
+
   try {
-    const newCustomer = customerSchema.parse({
-      first_name: first_name.value,
-      last_name: last_name.value,
-      notes: notes.value,
-    });
-
+    const validatedData = customerSchema.parse(event.data);
+    
     const response = await $fetch("/api/customers", {
       method: "POST",
-      body: newCustomer,
+      body: validatedData,
     });
 
-    emit("customerAdded");
+    message.value = {
+      type: 'success',
+      text: 'Customer added successfully!'
+    };
 
-    // Optionally, reset the form fields
-    first_name.value = "";
-    last_name.value = "";
-    notes.value = "";
+    // Reset form
+    Object.keys(formState).forEach(key => {
+      formState[key as keyof typeof formState] = "";
+    });
+
+    // Emit success
+    setTimeout(() => {
+      emit("customerAdded");
+    }, 1000);
+
   } catch (error) {
     console.error("Error adding customer:", error);
+    message.value = {
+      type: 'error',
+      text: error instanceof Error ? error.message : 'Failed to add customer. Please try again.'
+    };
+  } finally {
+    isSubmitting.value = false;
   }
 };
 </script>
 
 <template>
   <div>
-    <h2>Add Customer</h2>
-    <form @submit.prevent="addCustomer">
-      <div>
-        <label for="first_name">First Name:</label>
-        <Input id="first_name" v-model="first_name" required />
+    <UForm 
+      :schema="customerSchema" 
+      :state="formState" 
+      @submit="addCustomer"
+      class="space-y-4"
+    >
+      <UFormGroup label="First Name" name="first_name" required>
+        <UInput 
+          v-model="formState.first_name" 
+          placeholder="Enter first name"
+          size="lg"
+          :disabled="isSubmitting"
+        />
+      </UFormGroup>
+
+      <UFormGroup label="Last Name" name="last_name" required>
+        <UInput 
+          v-model="formState.last_name" 
+          placeholder="Enter last name"
+          size="lg"
+          :disabled="isSubmitting"
+        />
+      </UFormGroup>
+
+      <UFormGroup label="Notes" name="notes">
+        <UTextarea 
+          v-model="formState.notes" 
+          placeholder="Add any notes about this customer..."
+          :rows="3"
+          :disabled="isSubmitting"
+        />
+      </UFormGroup>
+
+      <div class="flex justify-end gap-3 pt-4">
+        <UButton 
+          color="neutral" 
+          variant="ghost" 
+          @click="$emit('cancel')"
+          :disabled="isSubmitting"
+        >
+          Cancel
+        </UButton>
+        <UButton 
+          type="submit" 
+          color="primary"
+          :loading="isSubmitting"
+          :disabled="isSubmitting"
+        >
+          Add Customer
+        </UButton>
       </div>
-      <div>
-        <label for="last_name">Last Name:</label>
-        <Input id="last_name" v-model="last_name" required />
-      </div>
-      <div>
-        <label for="notes">Notes:</label>
-        <Input id="notes" v-model="notes" />
-      </div>
-      <Button type="submit">Add Customer</Button>
-    </form>
+    </UForm>
+
+    <!-- Success/Error Toast -->
+    <div v-if="message" class="mt-4">
+      <UAlert
+        :color="message.type === 'success' ? 'success' : 'error'"
+        :title="message.type === 'success' ? 'Success!' : 'Error'"
+        :description="message.text"
+        :close-button="{ }"
+        @close="message = null"
+      />
+    </div>
   </div>
 </template>
 
-<style scoped>
-form {
-  border: 1px solid #ccc;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-label {
-  font-weight: bold;
-}
-input,
-textarea {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-/* button {
-  width: 150px;
-  padding: 0.5rem;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-} */
-</style>
+

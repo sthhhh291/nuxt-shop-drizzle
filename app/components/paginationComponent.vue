@@ -23,21 +23,29 @@ const goToPage = (page: number) => {
 </script>
 
 <template>
-    <div class="pagination">
-        <button 
+    <div class="flex items-center justify-center gap-4">
+        <UButton 
+            variant="outline"
+            icon="i-heroicons-chevron-left"
             :disabled="!props.hasPrevPage" 
             @click="goToPage(props.currentPage - 1)"
         >
             Previous
-        </button>
+        </UButton>
         
-        <span>Page {{ props.currentPage }} of {{ props.totalPages }}</span>
+        <div class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <span class="text-sm text-gray-600 dark:text-gray-400">
+                Page {{ props.currentPage }} of {{ props.totalPages }}
+            </span>
+        </div>
         
-        <button 
+        <UButton 
+            variant="outline"
+            trailing-icon="i-heroicons-chevron-right"
             :disabled="!props.hasNextPage" 
             @click="goToPage(props.currentPage + 1)"
         >
             Next
-        </button>
+        </UButton>
     </div>
 </template>

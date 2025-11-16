@@ -14,5 +14,12 @@ const handleSignOut = async () => {
 </script>
 
 <template>
-  <Button @click="handleSignOut">Sign Out</Button>
+  <UButton 
+    variant="outline" 
+    color="error"
+    icon="i-heroicons-arrow-right-on-rectangle"
+    @click="handleSignOut"
+  >
+    Sign Out
+  </UButton>
 </template>
