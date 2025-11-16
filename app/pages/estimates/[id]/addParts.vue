@@ -1,8 +1,22 @@
 <script setup lang="ts">
 import { z } from "zod";
+
 const { id } = useRoute().params;
 const router = useRouter();
-const part = ref({
+const toast = useToast();
+
+const partSchema = z.object({
+  description: z.string().min(1, "Description is required").max(255),
+  mfr_number: z.string().optional(),
+  part_number: z.string().optional(),
+  quantity: z.number().min(1, "Quantity must be at least 1"),
+  cost: z.number().min(0, "Cost must be valid"),
+  list: z.number().min(0, "List price must be valid"),
+  unit_price: z.number().min(0, "Unit price must be valid"),
+  estimate_id: z.number().min(1),
+});
+
+const formState = reactive({
   description: "",
   quantity: 1,
   mfr_number: "",
@@ -10,132 +24,252 @@ const part = ref({
   cost: 0,
   list: 0,
   unit_price: 0,
-  estimate_id: Number(id),
 });
 
-const partSchema = z.object({
-  description: z.string().min(1).max(255),
-  mfr_number: z.string().optional(),
-  part_number: z.string().optional(),
-  quantity: z.number().min(1),
-  cost: z.number().min(0),
-  list: z.number().min(0),
-  unit_price: z.number().min(0),
-  estimate_id: z.number().min(1),
-});
+const isSubmitting = ref(false);
 
-const submitPart = async () => {
-  const npart = partSchema.parse({
-    description: part.value.description,
-    quantity: Number(part.value.quantity),
-    mfr_number: "",
-    part_number: "",
-    cost: Number(part.value.cost),
-    list: Number(part.value.list),
-    unit_price: Number(part.value.unit_price),
-    estimate_id: Number(part.value.estimate_id),
-  });
+const calcPrice = () => {
+  const markup = formState.cost * 1.86;
+  formState.unit_price =
+    markup > formState.list && formState.list > 0 ?
+      formState.list
+    : parseFloat(markup.toFixed(2));
+};
+
+// Watch for changes in cost, list, or quantity to automatically calculate price
+watch(
+  [() => formState.cost, () => formState.list, () => formState.quantity],
+  () => {
+    calcPrice();
+  }
+);
+
+const submitPart = async (event: any) => {
   try {
-    await useFetch(`/api/parts`, {
-      method: "POST",
-      body: npart,
-      headers: {
-        "Content-Type": "application/json",
-      },
+    isSubmitting.value = true;
+
+    const validatedData = partSchema.parse({
+      description: event.data.description,
+      quantity: Number(event.data.quantity),
+      mfr_number: event.data.mfr_number || "",
+      part_number: event.data.part_number || "",
+      cost: Number(event.data.cost),
+      list: Number(event.data.list),
+      unit_price: Number(event.data.unit_price),
+      estimate_id: Number(id),
     });
+
+    await $fetch(`/api/parts`, {
+      method: "POST",
+      body: validatedData,
+    });
+
+    toast.add({
+      title: "Success!",
+      description: "Part added to estimate",
+      color: "green",
+    });
+
     router.push(`/estimates/${id}`);
   } catch (error) {
     console.error("Error adding part:", error);
+    toast.add({
+      title: "Error",
+      description:
+        error instanceof Error ? error.message : "Failed to add part",
+      color: "red",
+    });
+  } finally {
+    isSubmitting.value = false;
   }
-};
-
-const calcPrice = () => {
-  // const compare = part.value.cost * 1.86;
-  part.value.cost * 1.86 > part.value.list ?
-    (part.value.unit_price = part.value.list)
-  : (part.value.unit_price = parseFloat((part.value.cost * 1.86).toFixed(2)));
-  // Implement price calculation logic here if needed
 };
 </script>
 
 <template>
-  <div>
-    <h1>Add Part to Estimate {{ id }}</h1>
-    <form class="card p-3" @submit.prevent="submitPart">
-      <div class="mb-3">
-        <label for="description" class="form-label">Description</label>
-        <Input
-          id="description"
-          v-model="part.description"
-          type="text"
-          class="form-control"
-          name="description"
-          required />
+  <UContainer class="py-8">
+    <div class="max-w-4xl mx-auto">
+      <!-- Header -->
+      <div class="mb-8">
+        <div class="flex items-center gap-4 mb-4">
+          <UButton
+            variant="ghost"
+            icon="i-heroicons-arrow-left"
+            @click="router.push(`/estimates/${id}`)">
+            Back to Estimate
+          </UButton>
+        </div>
+
+        <div class="text-center">
+          <div
+            class="w-16 h-16 mx-auto mb-4 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+            <UIcon
+              name="i-heroicons-cog-6-tooth"
+              class="w-8 h-8 text-primary-600 dark:text-primary-400" />
+          </div>
+
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Add Part
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400">
+            Add a part to estimate #{{ id }}
+          </p>
+        </div>
       </div>
-      <div class="mb-3">
-        <label for="mfr_number" class="form-label">Manufacturer Number</label>
-        <Input
-          id="mfr_number"
-          v-model="part.mfr_number"
-          type="text"
-          class="form-control"
-          name="mfr_number" />
-      </div>
-      <div class="mb-3">
-        <label for="part_number" class="form-label">Part Number</label>
-        <Input
-          id="part_number"
-          v-model="part.part_number"
-          type="text"
-          class="form-control"
-          name="part_number" />
-      </div>
-      <div class="mb-3">
-        <label for="quantity" class="form-label">Quantity</label>
-        <Input
-          id="quantity"
-          v-model="part.quantity"
-          type="number"
-          class="form-control"
-          name="quantity"
-          required
-          @input="calcPrice" />
-      </div>
-      <div class="mb-3">
-        <label for="cost" class="form-label">Cost</label>
-        <Input
-          id="cost"
-          v-model="part.cost"
-          type="number"
-          step="0.01"
-          class="form-control"
-          name="cost"
-          required
-          @input="calcPrice" />
-      </div>
-      <div class="mb-3">
-        <label for="list" class="form-label">List</label>
-        <Input
-          id="list"
-          v-model="part.list"
-          type="number"
-          class="form-control"
-          name="list"
-          @input="calcPrice" />
-      </div>
-      <div class="mb-3">
-        <label for="unit_price" class="form-label">Unit Price</label>
-        <Input
-          id="unit_price"
-          v-model="part.unit_price"
-          type="number"
-          step="0.01"
-          class="form-control"
-          name="unit_price"
-          required />
-      </div>
-      <Button type="submit" class="btn btn-primary">Add Part</Button>
-      <Button @click="router.push(`/estimates/${id}`)">Cancel</Button>
-    </form>
-  </div>
+
+      <!-- Form -->
+      <UCard>
+        <UForm
+          :schema="partSchema"
+          :state="formState"
+          @submit="submitPart"
+          class="space-y-6">
+          <UFormGroup label="Part Description" name="description" required>
+            <UTextarea
+              v-model="formState.description"
+              placeholder="Describe the part or component"
+              :rows="2"
+              :disabled="isSubmitting" />
+          </UFormGroup>
+
+          <div class="grid grid-cols-2 gap-4">
+            <UFormGroup label="Manufacturer Number" name="mfr_number">
+              <UInput
+                v-model="formState.mfr_number"
+                placeholder="MFR part number"
+                icon="i-heroicons-hashtag"
+                size="lg"
+                :disabled="isSubmitting" />
+            </UFormGroup>
+
+            <UFormGroup label="Part Number" name="part_number">
+              <UInput
+                v-model="formState.part_number"
+                placeholder="Internal part number"
+                icon="i-heroicons-qr-code"
+                size="lg"
+                :disabled="isSubmitting" />
+            </UFormGroup>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4">
+            <UFormGroup label="Quantity" name="quantity" required>
+              <UInput
+                v-model.number="formState.quantity"
+                type="number"
+                min="1"
+                placeholder="1"
+                icon="i-heroicons-squares-2x2"
+                size="lg"
+                :disabled="isSubmitting" />
+            </UFormGroup>
+
+            <UFormGroup label="Cost ($)" name="cost" required>
+              <UInput
+                v-model.number="formState.cost"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                icon="i-heroicons-currency-dollar"
+                size="lg"
+                :disabled="isSubmitting" />
+            </UFormGroup>
+
+            <UFormGroup label="List Price ($)" name="list">
+              <UInput
+                v-model.number="formState.list"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                icon="i-heroicons-tag"
+                size="lg"
+                :disabled="isSubmitting" />
+            </UFormGroup>
+          </div>
+
+          <UFormGroup label="Unit Price ($)" name="unit_price" required>
+            <UInput
+              v-model.number="formState.unit_price"
+              type="number"
+              step="0.01"
+              min="0"
+              readonly
+              icon="i-heroicons-calculator"
+              size="lg"
+              class="bg-gray-50 dark:bg-gray-800"
+              :disabled="isSubmitting" />
+            <template #help>
+              <span class="text-sm text-gray-500">
+                Automatically calculated with 86% markup (cost × 1.86 or list
+                price, whichever is lower)
+              </span>
+            </template>
+          </UFormGroup>
+
+          <!-- Pricing Summary -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
+              Pricing Summary
+            </h3>
+            <div class="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <span class="text-gray-600 dark:text-gray-400"
+                  >Total Cost:</span
+                >
+                <div class="font-medium"
+                  >${{ (formState.cost * formState.quantity).toFixed(2) }}</div
+                >
+              </div>
+              <div>
+                <span class="text-gray-600 dark:text-gray-400"
+                  >Unit Markup:</span
+                >
+                <div class="font-medium"
+                  >{{
+                    formState.cost > 0 ?
+                      Math.round(
+                        ((formState.unit_price - formState.cost) /
+                          formState.cost) *
+                          100
+                      )
+                    : 0
+                  }}%</div
+                >
+              </div>
+              <div>
+                <span class="text-gray-600 dark:text-gray-400"
+                  >Total Price:</span
+                >
+                <div class="font-medium text-lg text-primary-600"
+                  >${{
+                    (formState.unit_price * formState.quantity).toFixed(2)
+                  }}</div
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <UButton
+              color="neutral"
+              variant="outline"
+              block
+              @click="router.push(`/estimates/${id}`)"
+              :disabled="isSubmitting">
+              Cancel
+            </UButton>
+            <UButton
+              type="submit"
+              color="primary"
+              block
+              :loading="isSubmitting"
+              :disabled="isSubmitting">
+              Add Part
+            </UButton>
+          </div>
+        </UForm>
+      </UCard>
+    </div>
+  </UContainer>
 </template>

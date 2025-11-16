@@ -1,75 +1,185 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { z } from "zod";
+
 const { id } = useRoute().params;
-const labor = ref({
-  description: "",
-  hours: 0,
-  price: 0,
-  rate: 125,
-  estimate_id: Number(id),
+const router = useRouter();
+const toast = useToast();
+
+const laborSchema = z.object({
+  description: z.string().min(1, "Description is required"),
+  hours: z.number().min(0.1, "Hours must be greater than 0"),
+  rate: z.number().min(1, "Rate must be greater than 0"),
+  price: z.number().min(0, "Price must be valid"),
+  estimate_id: z.number().int(),
 });
 
+const formState = reactive({
+  description: "",
+  hours: 0,
+  rate: 125,
+  price: 0,
+});
+
+const isSubmitting = ref(false);
+
 const calcPrice = () => {
-  labor.value.price = labor.value.hours * labor.value.rate;
+  formState.price = formState.hours * formState.rate;
 };
 
-const submitLabor = async () => {
+// Watch for changes in hours or rate to automatically calculate price
+watch([() => formState.hours, () => formState.rate], () => {
+  calcPrice();
+});
+
+const submitLabor = async (event: any) => {
   try {
-    await useFetch("/api/labor", {
-      method: "POST",
-      body: {
-        ...labor.value,
-        hours: Number(labor.value.hours),
-        price: Number(labor.value.price),
-        rate: Number(labor.value.rate),
-      },
+    isSubmitting.value = true;
+
+    const validatedData = laborSchema.parse({
+      description: event.data.description,
+      hours: Number(event.data.hours),
+      rate: Number(event.data.rate),
+      price: Number(event.data.price),
+      estimate_id: Number(id),
     });
-    useRouter().push(`/estimates/${id}`);
+
+    await $fetch("/api/labor", {
+      method: "POST",
+      body: validatedData,
+    });
+
+    toast.add({
+      title: "Success!",
+      description: "Labor item added to estimate",
+      color: "green",
+    });
+
+    router.push(`/estimates/${id}`);
   } catch (error) {
     console.error("Error adding labor:", error);
+    toast.add({
+      title: "Error",
+      description:
+        error instanceof Error ? error.message : "Failed to add labor item",
+      color: "red",
+    });
+  } finally {
+    isSubmitting.value = false;
   }
 };
 </script>
 
 <template>
-  <div>
-    <form class="card" @submit.prevent="submitLabor">
-      <h1>Add Labor to Estimate {{ id }}</h1>
-      <div>
-        <label for="description">Description:</label>
-        <Input
-          id="description"
-          v-model="labor.description"
-          type="text"
-          required
-        />
+  <UContainer class="py-8">
+    <div class="max-w-2xl mx-auto">
+      <!-- Header -->
+      <div class="mb-8">
+        <div class="flex items-center gap-4 mb-4">
+          <UButton
+            variant="ghost"
+            icon="i-heroicons-arrow-left"
+            @click="router.push(`/estimates/${id}`)">
+            Back to Estimate
+          </UButton>
+        </div>
+
+        <div class="text-center">
+          <div
+            class="w-16 h-16 mx-auto mb-4 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+            <UIcon
+              name="i-heroicons-wrench-screwdriver"
+              class="w-8 h-8 text-primary-600 dark:text-primary-400" />
+          </div>
+
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Add Labor Item
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400">
+            Add labor charges to estimate #{{ id }}
+          </p>
+        </div>
       </div>
-      <div>
-        <label for="hours">Hours:</label>
-        <Input
-          id="hours"
-          v-model="labor.hours"
-          type="number"
-          required
-          @input="calcPrice"
-        />
-      </div>
-      <div>
-        <label for="rate">Labor Rate:</label>
-        <Input
-          id="rate"
-          v-model="labor.rate"
-          type="number"
-          required
-          @input="calcPrice"
-        />
-      </div>
-      <div>
-        <label for="price">Price:</label>
-        <Input id="price" v-model="labor.price" type="number" required />
-      </div>
-      <Button type="submit">Add Labor</Button>
-      <Button @click="useRouter().push(`/estimates/${id}`)">Cancel</Button>
-    </form>
-  </div>
+
+      <!-- Form -->
+      <UCard>
+        <UForm
+          :schema="laborSchema"
+          :state="formState"
+          @submit="submitLabor"
+          class="space-y-6">
+          <UFormGroup label="Labor Description" name="description" required>
+            <UTextarea
+              v-model="formState.description"
+              placeholder="Describe the labor work performed"
+              :rows="3"
+              :disabled="isSubmitting" />
+          </UFormGroup>
+
+          <div class="grid grid-cols-2 gap-4">
+            <UFormGroup label="Hours" name="hours" required>
+              <UInput
+                v-model.number="formState.hours"
+                type="number"
+                step="0.1"
+                min="0.1"
+                placeholder="0.0"
+                icon="i-heroicons-clock"
+                size="lg"
+                :disabled="isSubmitting" />
+            </UFormGroup>
+
+            <UFormGroup label="Hourly Rate ($)" name="rate" required>
+              <UInput
+                v-model.number="formState.rate"
+                type="number"
+                step="0.01"
+                min="1"
+                placeholder="125.00"
+                icon="i-heroicons-currency-dollar"
+                size="lg"
+                :disabled="isSubmitting" />
+            </UFormGroup>
+          </div>
+
+          <UFormGroup label="Total Price" name="price" required>
+            <UInput
+              v-model.number="formState.price"
+              type="number"
+              step="0.01"
+              readonly
+              icon="i-heroicons-calculator"
+              size="lg"
+              class="bg-gray-50 dark:bg-gray-800"
+              :disabled="isSubmitting" />
+            <template #help>
+              <span class="text-sm text-gray-500">
+                Automatically calculated: {{ formState.hours }} hours × ${{
+                  formState.rate
+                }}/hour
+              </span>
+            </template>
+          </UFormGroup>
+
+          <div class="flex gap-3 pt-4">
+            <UButton
+              color="neutral"
+              variant="outline"
+              block
+              @click="router.push(`/estimates/${id}`)"
+              :disabled="isSubmitting">
+              Cancel
+            </UButton>
+            <UButton
+              type="submit"
+              color="primary"
+              block
+              :loading="isSubmitting"
+              :disabled="isSubmitting">
+              Add Labor Item
+            </UButton>
+          </div>
+        </UForm>
+      </UCard>
+    </div>
+  </UContainer>
 </template>

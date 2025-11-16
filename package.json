@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",
+    "@heroicons/vue": "^2.2.0",
     "@libsql/client": "^0.15.15",
     "@nuxt/content": "^3.7.1",
     "@nuxt/eslint": "^1.9.0",
@@ -36,6 +37,8 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@iconify-json/heroicons": "^1.2.3",
+    "@iconify-json/lucide": "^1.2.73",
     "@types/better-sqlite3": "^7.6.13",
     "drizzle-kit": "^0.31.5",
     "tsx": "^4.20.6"
