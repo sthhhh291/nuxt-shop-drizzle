@@ -431,7 +431,7 @@ onMounted(() => {
                   color="primary"
                   size="lg"
                   block
-                  @click="showAddLaborModal = true">
+                  @click="router.push(`/estimates/${estimate.id}/addLabor`)">
                   <UIcon
                     name="i-heroicons-wrench-screwdriver"
                     class="w-5 h-5 mr-2" />
@@ -442,7 +442,7 @@ onMounted(() => {
                   color="primary"
                   size="lg"
                   block
-                  @click="showAddPartModal = true">
+                  @click="router.push(`/estimates/${estimate.id}/addParts`)">
                   <UIcon name="i-heroicons-cog-6-tooth" class="w-5 h-5 mr-2" />
                   Add Parts
                 </UButton>
@@ -451,7 +451,7 @@ onMounted(() => {
                   color="primary"
                   size="lg"
                   block
-                  @click="showAddOilModal = true">
+                  @click="router.push(`/estimates/${estimate.id}/addOil`)">
                   <UIcon name="i-heroicons-beaker" class="w-5 h-5 mr-2" />
                   Add Oil
                 </UButton>
@@ -460,7 +460,7 @@ onMounted(() => {
           </UCard>
 
           <!-- Labor Items -->
-          <UCard v-if="estimate?.labor_items?.length">
+          <UCard v-if="estimate?.labor?.length">
             <template #header>
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
@@ -471,24 +471,19 @@ onMounted(() => {
                 </div>
                 <div class="text-right">
                   <div class="text-sm text-gray-500 dark:text-gray-400"
-                    >{{ estimate.labor_items.length }} item(s)</div
+                    >{{ estimate.labor.length }} item(s)</div
                   >
                   <div class="font-semibold text-blue-600">
-                    {{
-                      formatCurrency(
-                        estimate.labor_items.reduce(
-                          (sum: number, item: any) =>
-                            sum + (item.total || item.hours * item.rate),
-                          0
-                        )
-                      )
-                    }}
+                    {{ formatCurrency(totals.labor) }}
                   </div>
                 </div>
               </div>
             </template>
+            <!-- <LaborCardComponent
+              :labor="estimate.labor"
+              @emit="fetchEstimateData" /> -->
             <LaborTableComponent
-              :labor="estimate.labor_items"
+              :labor="estimate.labor"
               @emit="fetchEstimateData" />
           </UCard>
 
@@ -507,15 +502,7 @@ onMounted(() => {
                     >{{ estimate.parts.length }} item(s)</div
                   >
                   <div class="font-semibold text-purple-600">
-                    {{
-                      formatCurrency(
-                        estimate.parts.reduce(
-                          (sum, item) =>
-                            sum + (item.total || item.quantity * item.price),
-                          0
-                        )
-                      )
-                    }}
+                    {{ formatCurrency(totals.parts) }}
                   </div>
                 </div>
               </div>
@@ -556,14 +543,14 @@ onMounted(() => {
               </div>
             </template>
             <OilTableComponent
-              :oils="estimate.oil_items"
+              :oils="estimate.oil"
               @emit="fetchEstimateData" />
           </UCard>
 
           <!-- Empty States -->
           <div
             v-if="
-              !estimate?.labor_items?.length &&
+              !estimate?.labor?.length &&
               !estimate?.parts?.length &&
               !estimate?.oil_items?.length
             "
@@ -599,7 +586,7 @@ onMounted(() => {
           <!-- Individual Empty States -->
           <UCard
             v-if="
-              !estimate?.labor_items?.length &&
+              !estimate?.labor?.length &&
               (estimate?.parts?.length || estimate?.oil_items?.length)
             ">
             <template #header>
@@ -612,7 +599,7 @@ onMounted(() => {
             </template>
             <div class="text-center py-8">
               <p class="text-gray-500 mb-4">No labor items added yet</p>
-              <UButton color="primary" @click="showAddLaborModal = true"
+              <UButton color="primary" @click="router.push(`/estimates/${estimate.id}/addLabor`)"
                 >Add Labor Item</UButton
               >
             </div>
@@ -621,7 +608,7 @@ onMounted(() => {
           <UCard
             v-if="
               !estimate?.parts?.length &&
-              (estimate?.labor_items?.length || estimate?.oil_items?.length)
+              (estimate?.labor?.length || estimate?.oil_items?.length)
             ">
             <template #header>
               <div class="flex items-center gap-3">
@@ -633,7 +620,7 @@ onMounted(() => {
             </template>
             <div class="text-center py-8">
               <p class="text-gray-500 mb-4">No parts added yet</p>
-              <UButton color="primary" @click="showAddPartModal = true"
+              <UButton color="primary" @click="router.push(`/estimates/${estimate.id}/addParts`)"
                 >Add Parts</UButton
               >
             </div>
@@ -642,7 +629,7 @@ onMounted(() => {
           <UCard
             v-if="
               !estimate?.oil_items?.length &&
-              (estimate?.labor_items?.length || estimate?.parts?.length)
+              (estimate?.labor?.length || estimate?.parts?.length)
             ">
             <template #header>
               <div class="flex items-center gap-3">
@@ -656,7 +643,7 @@ onMounted(() => {
             </template>
             <div class="text-center py-8">
               <p class="text-gray-500 mb-4">No oil/fluid items added yet</p>
-              <UButton color="primary" @click="showAddOilModal = true"
+              <UButton color="primary" @click="router.push(`/estimates/${estimate.id}/addOil`)"
                 >Add Oil/Fluid</UButton
               >
             </div>
@@ -687,14 +674,14 @@ onMounted(() => {
                   </span>
                 </div>
                 <div
-                  v-if="estimate?.labor_items?.length"
+                  v-if="estimate?.labor?.length"
                   class="text-sm text-blue-600 dark:text-blue-400">
                   {{
-                    estimate.labor_items
+                    estimate.labor
                       .reduce((sum, item) => sum + (item.hours || 0), 0)
                       .toFixed(2)
                   }}
-                  total hours • {{ estimate.labor_items.length }} item(s)
+                  total hours • {{ estimate.labor.length }} item(s)
                 </div>
               </div>
 
@@ -799,7 +786,7 @@ onMounted(() => {
               <h3 class="text-lg font-semibold">Actions</h3>
             </template>
             <div class="space-y-3">
-              <UButton color="primary" block @click="printEstimate">
+              <UButton color="primary" block @click="router.push(`/estimates/${estimate.id}/print`)">
                 <UIcon name="i-heroicons-printer" class="w-4 h-4 mr-2" />
                 Print
               </UButton>
@@ -863,7 +850,7 @@ onMounted(() => {
   </div>
 
   <!-- Add Labor Modal -->
-  <UModal v-model="showAddLaborModal">
+  <!-- <UModal v-model="showAddLaborModal">
     <UCard>
       <template #header>
         <h3 class="text-lg font-semibold">Add Labor Item</h3>
@@ -926,10 +913,10 @@ onMounted(() => {
         </div>
       </template>
     </UCard>
-  </UModal>
+  </UModal> -->
 
   <!-- Add Part Modal -->
-  <UModal v-model="showAddPartModal">
+  <!-- <UModal v-model="showAddPartModal">
     <UCard>
       <template #header>
         <h3 class="text-lg font-semibold">Add Part</h3>
@@ -999,10 +986,10 @@ onMounted(() => {
         </div>
       </template>
     </UCard>
-  </UModal>
+  </UModal> -->
 
   <!-- Add Oil Modal -->
-  <UModal v-model="showAddOilModal">
+  <!-- <UModal v-model="showAddOilModal">
     <UCard>
       <template #header>
         <h3 class="text-lg font-semibold">Add Oil/Fluid</h3>
@@ -1077,5 +1064,5 @@ onMounted(() => {
         </div>
       </template>
     </UCard>
-  </UModal>
+  </UModal> -->
 </template>

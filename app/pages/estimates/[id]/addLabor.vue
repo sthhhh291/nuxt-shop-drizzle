@@ -36,10 +36,10 @@ const submitLabor = async (event: any) => {
     isSubmitting.value = true;
 
     const validatedData = laborSchema.parse({
-      description: event.data.description,
-      hours: Number(event.data.hours),
-      rate: Number(event.data.rate),
-      price: Number(event.data.price),
+      description: formState.description,
+      hours: Number(formState.hours),
+      rate: Number(formState.rate),
+      price: Number(formState.price),
       estimate_id: Number(id),
     });
 
@@ -171,6 +171,7 @@ const submitLabor = async (event: any) => {
             </UButton>
             <UButton
               type="submit"
+              @click="submitLabor"
               color="primary"
               block
               :loading="isSubmitting"

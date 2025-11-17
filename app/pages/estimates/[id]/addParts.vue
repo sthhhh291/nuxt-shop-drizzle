@@ -49,13 +49,13 @@ const submitPart = async (event: any) => {
     isSubmitting.value = true;
 
     const validatedData = partSchema.parse({
-      description: event.data.description,
-      quantity: Number(event.data.quantity),
-      mfr_number: event.data.mfr_number || "",
-      part_number: event.data.part_number || "",
-      cost: Number(event.data.cost),
-      list: Number(event.data.list),
-      unit_price: Number(event.data.unit_price),
+      description: formState.description,
+      quantity: Number(formState.quantity),
+      mfr_number: formState.mfr_number || "",
+      part_number: formState.part_number || "",
+      cost: Number(formState.cost),
+      list: Number(formState.list),
+      unit_price: Number(formState.unit_price),
       estimate_id: Number(id),
     });
 
@@ -82,7 +82,8 @@ const submitPart = async (event: any) => {
   } finally {
     isSubmitting.value = false;
   }
-};
+}; 
+
 </script>
 
 <template>
@@ -261,6 +262,7 @@ const submitPart = async (event: any) => {
             </UButton>
             <UButton
               type="submit"
+              @click="submitPart"
               color="primary"
               block
               :loading="isSubmitting"
