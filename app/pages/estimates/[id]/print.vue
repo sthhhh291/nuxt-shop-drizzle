@@ -1,13 +1,11 @@
 <script setup lang="ts">
 // Disable layout for print page
 definePageMeta({
-  layout: false
+  layout: false,
 });
 
 const route = useRoute();
 const { id } = route.params;
-
-
 
 const { data, pending, error } = await useFetch(`/api/estimates/${id}`, {
   method: "GET",
@@ -16,7 +14,7 @@ const { data, pending, error } = await useFetch(`/api/estimates/${id}`, {
 if (error.value) {
   throw createError({
     statusCode: 404,
-    statusMessage: 'Estimate not found'
+    statusMessage: "Estimate not found",
   });
 }
 
@@ -40,7 +38,7 @@ const formatDate = (dateString: string): string => {
 };
 
 const formatPhone = (phone: string): string => {
-  const cleaned = phone.replace(/\D/g, '');
+  const cleaned = phone.replace(/\D/g, "");
   if (cleaned.length === 10) {
     return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
   }
@@ -81,7 +79,7 @@ onMounted(() => {
           </div>
         </div>
         <div class="estimate-info">
-          <h2 class="estimate-title">ESTIMATE</h2>
+          <h2 class="estimate-title">{{ estimate.estimate_type }}</h2>
           <div class="estimate-details">
             <p><strong>Estimate #:</strong> {{ estimate.id }}</p>
             <p><strong>Date:</strong> {{ formatDate(estimate.date) }}</p>
@@ -94,13 +92,27 @@ onMounted(() => {
         <div class="customer-info">
           <h3>Customer Information</h3>
           <div class="info-content">
-            <p><strong>{{ estimate.car.customer.first_name }} {{ estimate.car.customer.last_name }}</strong></p>
+            <p
+              ><strong
+                >{{ estimate.car.customer.first_name }}
+                {{ estimate.car.customer.last_name }}</strong
+              ></p
+            >
             <div v-if="estimate.car.customer.addresses?.length">
               <p>{{ estimate.car.customer.addresses[0].street }}</p>
-              <p>{{ estimate.car.customer.addresses[0].city }}, {{ estimate.car.customer.addresses[0].state }} {{ estimate.car.customer.addresses[0].zip_code }}</p>
+              <p
+                >{{ estimate.car.customer.addresses[0].city }},
+                {{ estimate.car.customer.addresses[0].state }}
+                {{ estimate.car.customer.addresses[0].zip_code }}</p
+              >
             </div>
             <div v-if="estimate.car.customer.phones?.length">
-              <p>Phone: {{ formatPhone(estimate.car.customer.phones[0].phone_number) }}</p>
+              <p
+                >Phone:
+                {{
+                  formatPhone(estimate.car.customer.phones[0].phone_number)
+                }}</p
+              >
             </div>
             <div v-if="estimate.car.customer.emails?.length">
               <p>Email: {{ estimate.car.customer.emails[0].email_address }}</p>
@@ -111,11 +123,18 @@ onMounted(() => {
         <div class="vehicle-info">
           <h3>Vehicle Information</h3>
           <div class="info-content">
-            <p><strong>{{ estimate.car.year }} {{ estimate.car.make }} {{ estimate.car.model }}</strong></p>
+            <p
+              ><strong
+                >{{ estimate.car.year }} {{ estimate.car.make }}
+                {{ estimate.car.model }}</strong
+              ></p
+            >
             <p v-if="estimate.car.engine">Engine: {{ estimate.car.engine }}</p>
             <p v-if="estimate.car.vin">VIN: {{ estimate.car.vin }}</p>
-            <p v-if="estimate.car.license">License: {{ estimate.car.license }}</p>
-            <p>Mileage: {{ estimate.miles?.toLocaleString() || 'N/A' }}</p>
+            <p v-if="estimate.car.license"
+              >License: {{ estimate.car.license }}</p
+            >
+            <p>Mileage: {{ estimate.miles?.toLocaleString() || "N/A" }}</p>
           </div>
         </div>
       </section>
@@ -133,16 +152,16 @@ onMounted(() => {
           <thead>
             <tr>
               <th class="description-col">Description</th>
-              <th class="hours-col">Hours</th>
-              <th class="rate-col">Rate</th>
+              <!-- <th class="hours-col">Hours</th>
+              <th class="rate-col">Rate</th> -->
               <th class="amount-col">Amount</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="labor in estimate.labor" :key="labor.id">
               <td class="description-col">{{ labor.description }}</td>
-              <td class="hours-col">{{ labor.hours }}</td>
-              <td class="rate-col">{{ formatCurrency(labor.rate) }}</td>
+              <!-- <td class="hours-col">{{ labor.hours }}</td>
+              <td class="rate-col">{{ formatCurrency(labor.rate) }}</td> -->
               <td class="amount-col">{{ formatCurrency(labor.price) }}</td>
             </tr>
           </tbody>
@@ -165,10 +184,12 @@ onMounted(() => {
           <tbody>
             <tr v-for="part in estimate.parts" :key="part.id">
               <td class="description-col">{{ part.description }}</td>
-              <td class="part-number-col">{{ part.part_number || '-' }}</td>
+              <td class="part-number-col">{{ part.part_number || "-" }}</td>
               <td class="qty-col">{{ part.quantity }}</td>
               <td class="rate-col">{{ formatCurrency(part.unit_price) }}</td>
-              <td class="amount-col">{{ formatCurrency(part.quantity * part.unit_price) }}</td>
+              <td class="amount-col">{{
+                formatCurrency(part.quantity * part.unit_price)
+              }}</td>
             </tr>
           </tbody>
         </table>
@@ -191,7 +212,9 @@ onMounted(() => {
               <td class="description-col">{{ oil.type }}</td>
               <td class="qty-col">{{ oil.quantity }} qt</td>
               <td class="rate-col">{{ formatCurrency(oil.price_per_unit) }}</td>
-              <td class="amount-col">{{ formatCurrency(oil.quantity * oil.price_per_unit) }}</td>
+              <td class="amount-col">{{
+                formatCurrency(oil.quantity * oil.price_per_unit)
+              }}</td>
             </tr>
           </tbody>
         </table>
@@ -203,38 +226,54 @@ onMounted(() => {
           <div class="totals-table">
             <div class="total-row">
               <span class="total-label">Labor Total:</span>
-              <span class="total-amount">{{ formatCurrency(totals?.labor || 0) }}</span>
+              <span class="total-amount">{{
+                formatCurrency(totals?.labor || 0)
+              }}</span>
             </div>
             <div class="total-row">
               <span class="total-label">Parts Total:</span>
-              <span class="total-amount">{{ formatCurrency(totals?.parts || 0) }}</span>
+              <span class="total-amount">{{
+                formatCurrency(totals?.parts || 0)
+              }}</span>
             </div>
             <div class="total-row">
               <span class="total-label">Oil & Fluids Total:</span>
-              <span class="total-amount">{{ formatCurrency(totals?.oil || 0) }}</span>
+              <span class="total-amount">{{
+                formatCurrency(totals?.oil || 0)
+              }}</span>
             </div>
             <div class="total-row subtotal-row">
               <span class="total-label">Subtotal:</span>
-              <span class="total-amount">{{ formatCurrency(totals?.subtotal || 0) }}</span>
+              <span class="total-amount">{{
+                formatCurrency(totals?.subtotal || 0)
+              }}</span>
             </div>
             <div class="total-row">
               <span class="total-label">Tax:</span>
-              <span class="total-amount">{{ formatCurrency(totals?.tax || 0) }}</span>
+              <span class="total-amount">{{
+                formatCurrency(totals?.tax || 0)
+              }}</span>
             </div>
             <div class="total-row">
               <span class="total-label">Shop Fees:</span>
-              <span class="total-amount">{{ formatCurrency(totals?.shop_fees || 0) }}</span>
+              <span class="total-amount">{{
+                formatCurrency(totals?.shop_fees || 0)
+              }}</span>
             </div>
             <div class="total-row grand-total">
               <span class="total-label">Grand Total:</span>
-              <span class="total-amount">{{ formatCurrency(totals?.total || 0) }}</span>
+              <span class="total-amount">{{
+                formatCurrency(totals?.total || 0)
+              }}</span>
             </div>
           </div>
         </div>
       </section>
 
       <!-- Footer -->
-      <footer class="estimate-footer">
+      <footer
+        v-if="estimate.estimate_type === 'estimate'"
+        class="estimate-footer">
         <div class="footer-notes">
           <p><strong>Important Notes:</strong></p>
           <ul>
@@ -244,8 +283,10 @@ onMounted(() => {
             <li>Customer authorization required before work begins</li>
           </ul>
         </div>
-        
-        <div class="signature-section">
+
+        <div
+          v-if="estimate.estimate_type === 'estimate'"
+          class="signature-section">
           <div class="signature-line">
             <span>Customer Signature: ________________________________</span>
             <span class="signature-date">Date: ________________</span>
@@ -263,34 +304,34 @@ onMounted(() => {
     margin: 0;
     padding: 0;
   }
-  
+
   body {
     margin: 0;
     font-size: 10pt;
     line-height: 1.2;
   }
-  
+
   .estimate-print {
     page-break-inside: avoid;
   }
-  
+
   .items-section {
     page-break-inside: auto;
   }
-  
+
   .totals-section {
     page-break-inside: avoid;
   }
-  
+
   /* Force smaller fonts for print */
   .company-name {
     font-size: 18pt !important;
   }
-  
+
   .estimate-title {
     font-size: 16pt !important;
   }
-  
+
   .items-section h3 {
     font-size: 11pt !important;
   }
@@ -301,12 +342,13 @@ onMounted(() => {
   max-width: 8.5in;
   margin: 0 auto;
   background: white;
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
   color: #000;
   line-height: 1.2;
 }
 
-.loading-state, .error-state {
+.loading-state,
+.error-state {
   text-align: center;
   padding: 1rem;
 }
@@ -357,11 +399,13 @@ onMounted(() => {
   gap: 1rem;
 }
 
-.customer-info, .vehicle-info {
+.customer-info,
+.vehicle-info {
   flex: 1;
 }
 
-.customer-info h3, .vehicle-info h3 {
+.customer-info h3,
+.vehicle-info h3 {
   font-size: 11pt;
   font-weight: bold;
   margin: 0 0 0.3rem 0;
@@ -433,12 +477,14 @@ onMounted(() => {
   width: 15%;
 }
 
-.hours-col, .qty-col {
+.hours-col,
+.qty-col {
   width: 10%;
   text-align: center;
 }
 
-.rate-col, .amount-col {
+.rate-col,
+.amount-col {
   width: 15%;
   text-align: right;
 }

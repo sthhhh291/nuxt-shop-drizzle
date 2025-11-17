@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { form } from "#build/ui";
 import { z } from "zod";
 
 const { id } = useRoute().params;
@@ -37,6 +38,16 @@ const oilTypeOptions = [
   { label: "10W-30 Conventional", value: "10W-30 Conventional" },
   { label: "10W-40 Conventional", value: "10W-40 Conventional" },
   { label: "15W-40 Diesel", value: "15W-40 Diesel" },
+  { label: "Mercon V ATF", value: "Mercon V ATF" },
+  { label: "Dexron VI ATF", value: "Dexron VI ATF" },
+  { label: "DOT 3 Brake Fluid", value: "DOT 3 Brake Fluid" },
+  { label: "DOT 4 Brake Fluid", value: "DOT 4 Brake Fluid" },
+  { label: "Power Steering Fluid", value: "Power Steering Fluid" },
+  { label: "Coolant/Antifreeze", value: "Coolant/Antifreeze" },
+  { label: "Gear Oil", value: "Gear Oil" },
+  { label: "Hydraulic Fluid", value: "Hydraulic Fluid" },
+  { label: "Transmission Fluid", value: "Transmission Fluid" },
+  { label: "Other", value: "Other" },
 ];
 
 const calcPrice = () => {
@@ -60,13 +71,13 @@ const submitOil = async (event: any) => {
     isSubmitting.value = true;
 
     const validatedData = oilSchema.parse({
-      type: event.data.type,
-      quantity: Number(event.data.quantity),
-      mfr_number: event.data.mfr_number || "",
-      part_number: event.data.part_number || "",
-      cost: Number(event.data.cost),
-      list: Number(event.data.list),
-      price_per_unit: Number(event.data.price_per_unit),
+      type: formState.type,
+      quantity: Number(formState.quantity),
+      mfr_number: formState.mfr_number || "",
+      part_number: formState.part_number || "",
+      cost: Number(formState.cost),
+      list: Number(formState.list),
+      price_per_unit: Number(formState.price_per_unit),
       estimate_id: Number(id),
     });
 
@@ -78,7 +89,7 @@ const submitOil = async (event: any) => {
     toast.add({
       title: "Success!",
       description: "Oil/fluid added to estimate",
-      color: "green",
+      color: "success",
     });
 
     router.push(`/estimates/${id}`);
@@ -88,7 +99,7 @@ const submitOil = async (event: any) => {
       title: "Error",
       description:
         error instanceof Error ? error.message : "Failed to add oil/fluid",
-      color: "red",
+      color: "warning",
     });
   } finally {
     isSubmitting.value = false;
@@ -137,7 +148,7 @@ const submitOil = async (event: any) => {
           <UFormGroup label="Oil/Fluid Type" name="type" required>
             <USelect
               v-model="formState.type"
-              :options="oilTypeOptions"
+              :items="oilTypeOptions"
               placeholder="Select oil/fluid type"
               searchable
               size="lg"
@@ -207,7 +218,6 @@ const submitOil = async (event: any) => {
               type="number"
               step="0.01"
               min="0"
-              readonly
               icon="i-heroicons-calculator"
               size="lg"
               class="bg-gray-50 dark:bg-gray-800"
@@ -274,6 +284,7 @@ const submitOil = async (event: any) => {
             </UButton>
             <UButton
               type="submit"
+              @click="submitOil"
               color="primary"
               block
               :loading="isSubmitting"

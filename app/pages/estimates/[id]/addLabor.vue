@@ -51,7 +51,7 @@ const submitLabor = async (event: any) => {
     toast.add({
       title: "Success!",
       description: "Labor item added to estimate",
-      color: "green",
+      color: "success",
     });
 
     router.push(`/estimates/${id}`);
@@ -61,7 +61,7 @@ const submitLabor = async (event: any) => {
       title: "Error",
       description:
         error instanceof Error ? error.message : "Failed to add labor item",
-      color: "red",
+      color: "warning",
     });
   } finally {
     isSubmitting.value = false;
@@ -132,8 +132,8 @@ const submitLabor = async (event: any) => {
               <UInput
                 v-model.number="formState.rate"
                 type="number"
-                step="0.01"
-                min="1"
+                step="5"
+                min="5"
                 placeholder="125.00"
                 icon="i-heroicons-currency-dollar"
                 size="lg"
