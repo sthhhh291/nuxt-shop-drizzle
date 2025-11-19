@@ -119,6 +119,12 @@ watch(() => route.path, () => {
                 <UIcon name="i-heroicons-document-text" class="mr-2" />
                 Estimates
               </UButton>
+              <UButton variant="ghost" to="/reports"
+                :class="{ 'bg-primary-50 dark:bg-primary-950 text-primary-600 dark:text-primary-400': $route.path.startsWith('/reports') }"
+              >
+                <UIcon name="i-heroicons-chart-bar" class="mr-2" />
+                Reports
+              </UButton>
             </div>
 
             <!-- User Menu -->

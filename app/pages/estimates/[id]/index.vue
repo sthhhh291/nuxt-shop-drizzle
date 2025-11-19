@@ -513,7 +513,7 @@ onMounted(() => {
           </UCard>
 
           <!-- Oil & Fluids -->
-          <UCard v-if="estimate?.oil_items?.length">
+          <UCard v-if="estimate?.oil?.length">
             <template #header>
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
@@ -524,12 +524,12 @@ onMounted(() => {
                 </div>
                 <div class="text-right">
                   <div class="text-sm text-gray-500 dark:text-gray-400"
-                    >{{ estimate.oil_items.length }} item(s)</div
+                    >{{ estimate.oil.length }} item(s)</div
                   >
                   <div class="font-semibold text-orange-600">
                     {{
                       formatCurrency(
-                        estimate.oil_items.reduce(
+                        estimate.oil.reduce(
                           (sum, item) =>
                             sum +
                             (item.total ||
@@ -552,7 +552,7 @@ onMounted(() => {
             v-if="
               !estimate?.labor?.length &&
               !estimate?.parts?.length &&
-              !estimate?.oil_items?.length
+              !estimate?.oil?.length
             "
             class="text-center py-12">
             <UIcon
@@ -587,7 +587,7 @@ onMounted(() => {
           <UCard
             v-if="
               !estimate?.labor?.length &&
-              (estimate?.parts?.length || estimate?.oil_items?.length)
+              (estimate?.parts?.length || estimate?.oil?.length)
             ">
             <template #header>
               <div class="flex items-center gap-3">
@@ -608,7 +608,7 @@ onMounted(() => {
           <UCard
             v-if="
               !estimate?.parts?.length &&
-              (estimate?.labor?.length || estimate?.oil_items?.length)
+              (estimate?.labor?.length || estimate?.oil?.length)
             ">
             <template #header>
               <div class="flex items-center gap-3">
@@ -628,7 +628,7 @@ onMounted(() => {
 
           <UCard
             v-if="
-              !estimate?.oil_items?.length &&
+              !estimate?.oil?.length &&
               (estimate?.labor?.length || estimate?.parts?.length)
             ">
             <template #header>
@@ -729,14 +729,14 @@ onMounted(() => {
                   </span>
                 </div>
                 <div
-                  v-if="estimate?.oil_items?.length"
+                  v-if="estimate?.oil?.length"
                   class="text-sm text-orange-600 dark:text-orange-400">
                   {{
-                    estimate.oil_items
+                    estimate.oil
                       .reduce((sum, item) => sum + (item.quantity || 0), 0)
                       .toFixed(2)
                   }}
-                  total quarts • {{ estimate.oil_items.length }} item(s)
+                  total quarts • {{ estimate.oil.length }} item(s)
                 </div>
               </div>
 
