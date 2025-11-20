@@ -1,9 +1,66 @@
 <script setup lang="ts">
-import type { carWithRelations } from "~~/db/schema";
+// Enhanced car type to include customer info from the API
+interface CarWithCustomer {
+  id: number;
+  make: string;
+  model: string;
+  year: number;
+  engine?: string;
+  vin?: string;
+  license?: string;
+  fleet?: string;
+  notes?: string;
+  customer_id: number;
+  customer_first_name?: string;
+  customer_last_name?: string;
+}
 
-const { data: cars } = await useFetch<carWithRelations[]>("/api/cars", {
+interface CarsResponse {
+  cars: CarWithCustomer[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    limit: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
+// Reactive search and pagination
+const searchQuery = ref("");
+const currentPage = ref(1);
+const isLoading = ref(false);
+
+// Fetch cars with search and pagination
+const { data: carsData, refresh: refreshCars } = await useFetch<CarsResponse>("/api/cars", {
   method: "GET",
+  query: computed(() => ({
+    search: searchQuery.value,
+    page: currentPage.value,
+    limit: 20
+  })),
+  server: false,
 });
+
+const cars = computed(() => carsData.value?.cars || []);
+const pagination = computed(() => carsData.value?.pagination);
+
+// Search functionality
+const debouncedSearch = useDebounceFn(() => {
+  currentPage.value = 1; // Reset to first page on new search
+  refreshCars();
+}, 300);
+
+watch(searchQuery, () => {
+  debouncedSearch();
+});
+
+// Pagination handlers
+const goToPage = (page: number) => {
+  currentPage.value = page;
+  refreshCars();
+};
 
 // Modal state
 const isAddCarOpen = ref(false);
@@ -19,8 +76,8 @@ const isAddCarOpen = ref(false);
         </h1>
         <p class="text-gray-600 dark:text-gray-400 mt-1">
           Manage your customer vehicles
-          <span v-if="cars" class="text-sm">
-            ({{ cars.length }} total)
+          <span v-if="pagination" class="text-sm">
+            ({{ pagination.totalCount }} total)
           </span>
         </p>
       </div>
@@ -34,6 +91,19 @@ const isAddCarOpen = ref(false);
       >
         Add Car
       </UButton>
+    </div>
+
+    <!-- Search Section -->
+    <div class="mb-6">
+      <UFormGroup label="Search Cars" description="Search by customer name, year, make, model, VIN, license plate, or fleet">
+        <UInput
+          v-model="searchQuery"
+          icon="i-heroicons-magnifying-glass"
+          placeholder="Search by customer name, car details, VIN, license..."
+          size="lg"
+          :loading="isLoading"
+        />
+      </UFormGroup>
     </div>
 
     <!-- Cars Grid -->
@@ -59,7 +129,7 @@ const isAddCarOpen = ref(false);
                 {{ car.year }} {{ car.make }} {{ car.model }}
               </h3>
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                Owner: {{ car.customer.first_name }} {{ car.customer.last_name }}
+                Owner: {{ car.customer_first_name }} {{ car.customer_last_name }}
               </p>
             </div>
             
@@ -94,36 +164,58 @@ const isAddCarOpen = ref(false);
             </p>
           </div>
 
-          <!-- Estimates Count -->
-          <div v-if="car.estimates && car.estimates.length > 0" class="pt-2 border-t border-gray-200 dark:border-gray-700">
-            <div class="flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400">
-              <UIcon name="i-heroicons-document-text" class="text-xs" />
-              <span>{{ car.estimates.length }} estimate(s)</span>
-            </div>
-          </div>
         </div>
       </UCard>
     </div>
 
+    <!-- Pagination -->
+    <div v-if="pagination && pagination.totalPages > 1" class="mt-8 flex justify-center">
+      <UPagination
+        v-model="currentPage"
+        :page-count="pagination.limit"
+        :total="pagination.totalCount"
+        :max="7"
+        @update:model-value="goToPage"
+      />
+    </div>
+
     <!-- Empty State -->
-    <UCard v-else>
+    <UCard v-else-if="!isLoading">
       <div class="text-center py-12">
         <UIcon name="i-heroicons-truck" class="text-4xl text-gray-400 mx-auto mb-4" />
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-          No cars yet
+          {{ searchQuery ? 'No cars found' : 'No cars yet' }}
         </h3>
         <p class="text-gray-500 dark:text-gray-400 mb-6">
-          Get started by adding your first vehicle.
+          {{ searchQuery 
+            ? 'Try adjusting your search terms or clear the search to see all cars.' 
+            : 'Get started by adding your first vehicle.' 
+          }}
         </p>
-        <UButton
-          color="primary"
-          icon="i-heroicons-plus"
-          @click="isAddCarOpen = true"
-        >
-          Add Your First Car
-        </UButton>
+        <div class="flex gap-3 justify-center">
+          <UButton
+            v-if="searchQuery"
+            variant="outline"
+            icon="i-heroicons-x-mark"
+            @click="searchQuery = ''"
+          >
+            Clear Search
+          </UButton>
+          <UButton
+            color="primary"
+            icon="i-heroicons-plus"
+            @click="isAddCarOpen = true"
+          >
+            {{ searchQuery ? 'Add Car' : 'Add Your First Car' }}
+          </UButton>
+        </div>
       </div>
     </UCard>
+
+    <!-- Loading State -->
+    <div v-else-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <USkeleton v-for="i in 6" :key="i" class="h-48" />
+    </div>
 
     <!-- Add Car Modal -->
     <UModal v-model="isAddCarOpen">
