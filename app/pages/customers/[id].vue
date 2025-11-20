@@ -17,17 +17,20 @@ const customer = computed(() => {
   <UContainer class="py-8">
     <!-- Header with Back Button -->
     <div class="flex items-center gap-4 mb-8">
-      <UButton 
-        variant="ghost" 
+      <UButton
+        variant="ghost"
         icon="i-heroicons-arrow-left"
-        @click="router.push('/customers')"
-      >
+        @click="router.push('/customers')">
         Back to Customers
       </UButton>
-      
+
       <div class="flex-1">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-          {{ customer ? `${customer.first_name} ${customer.last_name}` : 'Customer Details' }}
+          {{
+            customer ?
+              `${customer.first_name} ${customer.last_name}`
+            : "Customer Details"
+          }}
         </h1>
         <p class="text-gray-600 dark:text-gray-400 mt-1">
           Customer information and vehicles
@@ -39,47 +42,43 @@ const customer = computed(() => {
       <!-- Customer Information -->
       <div class="space-y-6">
         <customerCardComponent :customer="customer" />
-        
+
         <!-- Quick Actions -->
         <UCard>
           <template #header>
             <h3 class="text-lg font-semibold">Quick Actions</h3>
           </template>
-          
+
           <div class="space-y-3">
-            <UButton 
-              block 
-              variant="outline" 
+            <UButton
+              block
+              variant="outline"
               icon="i-heroicons-phone"
-              @click="router.push(`/customers/addPhone/${customer.id}`)"
-            >
+              @click="router.push(`/customers/addPhone/${customer.id}`)">
               Add Phone Number
             </UButton>
-            
-            <UButton 
-              block 
-              variant="outline" 
+
+            <UButton
+              block
+              variant="outline"
               icon="i-heroicons-envelope"
-              @click="router.push(`/customers/addEmail/${customer.id}`)"
-            >
+              @click="router.push(`/customers/addEmail/${customer.id}`)">
               Add Email
             </UButton>
-            
-            <UButton 
-              block 
-              variant="outline" 
+
+            <UButton
+              block
+              variant="outline"
               icon="i-heroicons-map-pin"
-              @click="router.push(`/customers/addAddress/${customer.id}`)"
-            >
+              @click="router.push(`/customers/addAddress/${customer.id}`)">
               Add Address
             </UButton>
-            
-            <UButton 
-              block 
-              variant="outline" 
+
+            <UButton
+              block
+              variant="outline"
               icon="i-heroicons-truck"
-              @click="router.push(`/customers/addCar/${customer.id}`)"
-            >
+              @click="router.push(`/customers/addCar/${customer.id}`)">
               Add Car
             </UButton>
           </div>
@@ -87,94 +86,32 @@ const customer = computed(() => {
       </div>
 
       <!-- Customer Cars -->
-      <div class="space-y-6">
-        <UCard>
-          <template #header>
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold">Customer Vehicles</h3>
-              <UButton 
-                size="sm" 
-                icon="i-heroicons-plus"
-                @click="router.push(`/customers/addCar/${customer.id}`)"
-              >
-                Add Car
-              </UButton>
-            </div>
-          </template>
-          
-          <div v-if="customer.cars && customer.cars.length > 0" class="space-y-4">
-            <div
-              v-for="car in customer.cars"
-              :key="car.id"
-              class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
-              @click="router.push(`/cars/${car.id}`)"
-            >
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <UAvatar class="bg-blue-500 dark:bg-blue-400">
-                    <UIcon name="i-heroicons-truck" />
-                  </UAvatar>
-                  
-                  <div>
-                    <h4 class="font-medium text-gray-900 dark:text-white">
-                      {{ car.year }} {{ car.make }} {{ car.model }}
-                    </h4>
-                    <div class="flex gap-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      <span v-if="car.engine">{{ car.engine }}</span>
-                      <span v-if="car.license">License: {{ car.license }}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <UIcon 
-                  name="i-heroicons-chevron-right" 
-                  class="text-gray-400"
-                />
-              </div>
-              
-              <div v-if="car.notes" class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                <p class="text-sm text-gray-600 dark:text-gray-300">
-                  {{ car.notes }}
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div v-else class="text-center py-8">
-            <UIcon name="i-heroicons-truck" class="text-3xl text-gray-400 mx-auto mb-3" />
-            <p class="text-gray-500 dark:text-gray-400 mb-4">
-              No vehicles registered for this customer
-            </p>
-            <UButton 
-              icon="i-heroicons-plus"
-              @click="router.push(`/customers/addCar/${customer.id}`)"
-            >
-              Add First Car
-            </UButton>
-          </div>
-        </UCard>
+      <customerCarsComponent :customer="customer" />
+      <!-- Recent Estimates -->
+      <UCard>
+        <template #header>
+          <h3 class="text-lg font-semibold">Recent Estimates</h3>
+        </template>
 
-        <!-- Recent Estimates -->
-        <UCard>
-          <template #header>
-            <h3 class="text-lg font-semibold">Recent Estimates</h3>
-          </template>
-          
-          <div class="text-center py-8">
-            <UIcon name="i-heroicons-document-text" class="text-3xl text-gray-400 mx-auto mb-3" />
-            <p class="text-gray-500 dark:text-gray-400">
-              No estimates found for this customer
-            </p>
-          </div>
-        </UCard>
-      </div>
+        <div class="text-center py-8">
+          <UIcon
+            name="i-heroicons-document-text"
+            class="text-3xl text-gray-400 mx-auto mb-3" />
+          <p class="text-gray-500 dark:text-gray-400">
+            No estimates found for this customer
+          </p>
+        </div>
+      </UCard>
     </div>
 
     <!-- Loading State -->
     <div v-else class="flex items-center justify-center py-12">
-      <UIcon name="i-heroicons-arrow-path" class="animate-spin text-2xl text-primary-500" />
-      <span class="ml-2 text-gray-600 dark:text-gray-400">Loading customer details...</span>
+      <UIcon
+        name="i-heroicons-arrow-path"
+        class="animate-spin text-2xl text-primary-500" />
+      <span class="ml-2 text-gray-600 dark:text-gray-400"
+        >Loading customer details...</span
+      >
     </div>
   </UContainer>
 </template>
-

@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const phoneSchema = z.object({
   phone_number: z.string().min(10).max(15),
-  phone_type: z.enum(["mobile", "landline"]),
+  phone_type: z.enum(["Cell", "Home", "Work"]),
   customer_id: z.number().int(),
 });
 

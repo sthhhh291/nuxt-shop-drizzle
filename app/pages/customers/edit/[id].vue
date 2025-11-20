@@ -61,7 +61,7 @@ const updateCustomer = async (event: any) => {
     toast.add({
       title: "Success!",
       description: "Customer updated successfully",
-      color: "green",
+      color: "success",
     });
 
     router.push(`/customers/${id}`);
@@ -71,7 +71,7 @@ const updateCustomer = async (event: any) => {
       title: "Error",
       description:
         error instanceof Error ? error.message : "Failed to update customer",
-      color: "red",
+      color: "warning",
     });
   } finally {
     isSubmitting.value = false;
@@ -110,7 +110,7 @@ const updateCustomer = async (event: any) => {
             <UAvatar
               :alt="`${customerData.first_name} ${customerData.last_name}`"
               size="xl"
-              :ui="{ background: 'bg-primary-500 dark:bg-primary-400' }">
+              :ui="{ fallback: 'bg-primary-500 dark:bg-primary-400' }">
               <template #fallback>
                 <span class="text-white font-medium text-xl">
                   {{ customerData.first_name?.charAt(0)
