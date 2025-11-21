@@ -7,12 +7,10 @@ interface LaborSeed {
   id:number;
   estimate_id: number;
   description: string;
-  // hours: number;
-  // rate: number;
   price: number;
 }
 
-// id,estimate_id,pass,description,price
+// read and parse the sample labor data from Labor.txt
 function loadLaborSeeds(): LaborSeed[] {
   const sampleLabor: LaborSeed[] = parse(
     fs.readFileSync("./server/utils/Labor.txt", "utf-8"),
@@ -23,6 +21,7 @@ function loadLaborSeeds(): LaborSeed[] {
   return sampleLabor;
 }
 
+//insert sample labor entries into the database
 export async function seedLabor() {
   const laborSeeds = loadLaborSeeds();
   

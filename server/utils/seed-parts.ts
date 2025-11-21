@@ -15,7 +15,7 @@ interface PartSeed {
   warrranty: string;
 }
 
-// id,estimate_id,quantity,man_no,part_no,description,cost,price,warrranty
+// read and parse the sample parts data from Parts.txt
 function loadPartSeeds(): PartSeed[] {
   const sampleParts: PartSeed[] = parse(
     fs.readFileSync("./server/utils/Parts.txt", "utf-8"),
@@ -26,6 +26,7 @@ function loadPartSeeds(): PartSeed[] {
   return sampleParts;
 }
 
+//insert sample parts into the database
 export async function seedParts() {
   const partSeeds = loadPartSeeds();
   

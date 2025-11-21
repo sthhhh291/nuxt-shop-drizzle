@@ -81,6 +81,7 @@ export async function seedContacts() {
       const [newCustomer] = await db
         .insert(customers)
         .values({
+          id: id,
           first_name: first_name || "",
           last_name: last_name || "",
           notes: `Imported contact with ID ${id}`,

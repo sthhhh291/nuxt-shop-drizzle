@@ -7,14 +7,11 @@ interface EstimateSeed {
   id: number;
   car_id: number;
   date: string;
-  // miles: string;
-  // hours_taken: number;
   miles: number;
   employee_id: number;
-  // private_notes: string;
-  // public_notes: string;
 }
-// id,car_id,date,miles,pass,pass,pass,employee_id
+
+// read and parse the sample estimates data from RepairOrder.txt
 function loadEstimateSeeds(): EstimateSeed[] {
   const sampleEstimates: EstimateSeed[] = parse(
     fs.readFileSync("./server/utils/RepairOrder.txt", "utf-8"),
@@ -25,6 +22,7 @@ function loadEstimateSeeds(): EstimateSeed[] {
   return sampleEstimates;
 }
 
+//insert sample estimates into the database
 export async function seedEstimates() {
   const estimateSeeds = loadEstimateSeeds();
 

@@ -10,8 +10,8 @@ interface OilSeed {
   quantity: number;
   price: number;
 }
-// id,estimate_id,quantity,description,price
 
+// read and parse the sample oil data from oil.txt
 function loadOilSeeds(): OilSeed[] {
   const sampleOil: OilSeed[] = parse(
     fs.readFileSync("./server/utils/oil.txt", "utf-8"),
@@ -22,6 +22,7 @@ function loadOilSeeds(): OilSeed[] {
   return sampleOil;
 }
 
+//insert sample oil entries into the database
 export async function seedOil() {
   const oilSeeds = loadOilSeeds();
   
