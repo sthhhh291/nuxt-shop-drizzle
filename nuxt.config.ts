@@ -14,7 +14,7 @@ export default defineNuxtConfig({
   
   // Color mode for Nuxt UI
   colorMode: {
-    preference: 'light'
+    preference: 'dark'
   },
   
   // Optimize build performance and bundle size
