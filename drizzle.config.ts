@@ -1,11 +1,11 @@
 import type { Config } from "drizzle-kit";
 
 export default {
-  dialect: "sqlite",
+  dialect: "turso",
   schema: ["./db/schema.ts", "./auth-schema.ts"],
   out: "./drizzle",
-  //   driver: "better-sqlite3",
   dbCredentials: {
-    url: "./db/dev.db",
+    url: process.env.TURSO_DB!,
+    authToken: process.env.TURSO_TOKEN!,
   },
 } satisfies Config;
