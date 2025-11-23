@@ -1,5 +1,10 @@
 <script setup lang="ts">
 const { session, loading, user, isAuthenticated } = useBetterAuth();
+const config = useRuntimeConfig();
+
+// Development mode: bypass auth
+const isDevelopment = config.public.disableAuth;
+const devBypassAuth = computed(() => isDevelopment || isAuthenticated.value);
 
 // Sidebar state
 const isSidebarOpen = ref(false);
@@ -7,7 +12,7 @@ const isMobile = ref(false);
 
 // Create a reactive key that changes when auth state changes
 const authKey = computed(
-  () => `${isAuthenticated.value}-${user.value?.id || "none"}`
+  () => `${devBypassAuth.value}-${user.value?.id || "dev"}`
 );
 
 // Navigation items
@@ -40,9 +45,9 @@ const navigationItems = [
 ];
 
 // Minimal logging only for authentication changes (not on every render)
-watch(isAuthenticated, (newAuth, oldAuth) => {
+watch(devBypassAuth, (newAuth, oldAuth) => {
   if (oldAuth !== undefined && oldAuth !== newAuth) {
-    console.log("Auth status changed:", newAuth);
+    console.log("Auth status changed:", newAuth, isDevelopment ? "(dev mode)" : "");
   }
 });
 
@@ -91,7 +96,7 @@ onMounted(() => {
     </div>
 
     <!-- Unauthenticated State -->
-    <div v-else-if="!isAuthenticated" class="min-h-screen flex items-center justify-center">
+    <div v-else-if="!devBypassAuth" class="min-h-screen flex items-center justify-center">
       <UCard class="w-full max-w-md">
         <div class="text-center space-y-6">
           <div>
@@ -127,16 +132,23 @@ onMounted(() => {
 
     <!-- Authenticated Sidebar Layout -->
     <div v-else class="flex h-screen overflow-hidden">
+      <!-- Development Mode Banner -->
+      <div v-if="isDevelopment" class="fixed top-0 left-0 right-0 z-50 bg-yellow-500 text-black text-center py-1 text-xs font-medium">
+        🔓 Development Mode - Authentication Disabled
+      </div>
       <!-- Sidebar -->
       <aside 
-        class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
+        class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
         :class="{ 
           'translate-x-0': isSidebarOpen, 
-          '-translate-x-full': !isSidebarOpen 
+          '-translate-x-full': !isSidebarOpen,
+          'pt-6': isDevelopment
         }"
       >
         <!-- Sidebar Header -->
-        <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700"
+          :class="{ 'mt-6': isDevelopment }"
+        >
           <div class="flex items-center gap-2">
             <UIcon name="i-heroicons-wrench-screwdriver" class="text-2xl text-primary-600 dark:text-primary-400" />
             <h1 class="text-lg font-bold text-gray-900 dark:text-white">
@@ -172,7 +184,7 @@ onMounted(() => {
 
         <!-- User Section -->
         <div class="border-t border-gray-200 dark:border-gray-700 p-4">
-          <div class="flex items-center gap-3 mb-3">
+          <div v-if="!isDevelopment" class="flex items-center gap-3 mb-3">
             <UAvatar
               :alt="user?.name || user?.email || 'User'"
               size="sm"
@@ -191,7 +203,25 @@ onMounted(() => {
             </div>
           </div>
           
-          <Signout class="w-full" />
+          <div v-else class="flex items-center gap-3 mb-3">
+            <UAvatar
+              size="sm"
+              class="bg-yellow-500"
+            >
+              D
+            </UAvatar>
+            
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-900 dark:text-white">
+                Dev Mode
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                Auth Disabled
+              </p>
+            </div>
+          </div>
+          
+          <Signout v-if="!isDevelopment" class="w-full" />
         </div>
       </aside>
 

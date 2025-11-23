@@ -8,6 +8,13 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     return;
   }
 
+  // Check if auth is disabled in development
+  const config = useRuntimeConfig();
+  if (config.public.disableAuth) {
+    console.log("Auth middleware bypassed - dev mode enabled");
+    return;
+  }
+
   // If coming from login page, give more time for auth state to propagate
   const isComingFromLogin = from?.path === "/auth/login";
 

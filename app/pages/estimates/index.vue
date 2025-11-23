@@ -1,10 +1,42 @@
 <script setup lang="ts">
+// Search and pagination state
+const searchQuery = ref("");
+const currentPage = ref(1);
+
 const { data, refresh } = await useFetch("/api/estimates", {
   method: "GET",
+  query: computed(() => ({
+    search: searchQuery.value,
+    page: currentPage.value,
+    limit: 20
+  })),
+  server: false,
 });
+
 const estimates = computed(() => {
   return data.value && "estimates" in data.value ? data.value.estimates : [];
 });
+
+const pagination = computed(() => {
+  return data.value && "pagination" in data.value ? data.value.pagination : undefined;
+});
+
+// Search with simple debounce
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+watch(searchQuery, () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1; // Reset to first page on new search
+    refresh();
+  }, 300);
+});
+
+// Pagination handler
+const goToPage = (page: number) => {
+  currentPage.value = page;
+  refresh();
+};
 
 // Modal state
 const isAddEstimateOpen = ref(false);
@@ -27,8 +59,8 @@ provide("refreshEstimates", refresh);
         </h1>
         <p class="text-gray-600 dark:text-gray-400 mt-1">
           Manage repair estimates and quotes
-          <span v-if="estimates" class="text-sm">
-            ({{ estimates.length }} total)
+          <span v-if="pagination" class="text-sm">
+            ({{ pagination.totalCount }} total)
           </span>
         </p>
       </div>
@@ -44,17 +76,56 @@ provide("refreshEstimates", refresh);
       </UButton>
     </div>
 
+    <!-- Search Section -->
+    <div class="mb-6">
+      <UFormGroup 
+        label="Search Estimates" 
+        description="Search by customer name, car details, labor, parts, oil, or notes"
+      >
+        <UInput
+          v-model="searchQuery"
+          icon="i-heroicons-magnifying-glass"
+          placeholder="Search by customer, car, labor, parts, oil type, or notes..."
+          size="lg"
+        />
+      </UFormGroup>
+    </div>
+
     <!-- Estimates List -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- Estimates Component -->
       <UCard>
         <template #header>
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-            Recent Estimates
-          </h2>
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+              {{ searchQuery ? 'Search Results' : 'Recent Estimates' }}
+            </h2>
+            <UButton
+              v-if="searchQuery"
+              variant="ghost"
+              size="xs"
+              icon="i-heroicons-x-mark"
+              @click="searchQuery = ''"
+            >
+              Clear
+            </UButton>
+          </div>
         </template>
         
         <estimatesComponent :estimates="estimates" />
+        
+        <!-- Pagination -->
+        <template v-if="pagination && pagination.totalPages > 1" #footer>
+          <div class="flex justify-center">
+            <UPagination
+              v-model="currentPage"
+              :page-count="pagination.limit"
+              :total="pagination.totalCount"
+              :max="5"
+              @update:model-value="goToPage"
+            />
+          </div>
+        </template>
       </UCard>
 
       <!-- Add Estimate Form -->

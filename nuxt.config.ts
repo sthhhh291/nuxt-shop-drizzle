@@ -12,6 +12,13 @@ export default defineNuxtConfig({
     "@nuxt/ui",
   ],
   
+  // Runtime config for client-side access
+  runtimeConfig: {
+    public: {
+      disableAuth: process.env.DISABLE_AUTH === 'true'
+    }
+  },
+  
   // Color mode for Nuxt UI
   colorMode: {
     preference: 'dark'
