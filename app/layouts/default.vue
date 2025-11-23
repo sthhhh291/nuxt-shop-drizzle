@@ -49,6 +49,11 @@ const navigationItems = [
     to: "/cars",
   },
   {
+    label: "Addresses",
+    icon: "i-heroicons-map-pin",
+    to: "/addresses",
+  },
+  {
     label: "Estimates",
     icon: "i-heroicons-document-text",
     to: "/estimates",

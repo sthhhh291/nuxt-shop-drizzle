@@ -11,33 +11,34 @@ export default defineNuxtConfig({
     "@nuxt/test-utils",
     "@nuxt/ui",
   ],
-  
+
   // Runtime config for client-side access
   runtimeConfig: {
     public: {
-      disableAuth: process.env.DISABLE_AUTH === 'true'
-    }
+      disableAuth: process.env.DISABLE_AUTH === "true",
+      authUrl: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+    },
   },
-  
+
   // Color mode for Nuxt UI
   colorMode: {
-    preference: 'dark'
+    preference: "dark",
   },
-  
+
   // Optimize build performance and bundle size
   vite: {
     optimizeDeps: {
       // Pre-bundle these dependencies
-      include: ['better-auth', 'drizzle-orm']
-    }
+      include: ["better-auth", "drizzle-orm"],
+    },
   },
-  
+
   // Server-side rendering optimizations
   ssr: true,
   nitro: {
     // Ensure Node.js packages stay server-side
     experimental: {
-      wasm: true
-    }
+      wasm: true,
+    },
   },
 });

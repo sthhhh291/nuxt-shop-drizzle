@@ -159,13 +159,16 @@ const addAddress = async (event: any) => {
             </UFormGroup>
           </div>
 
-          <div class="flex gap-3 pt-4">
+          <div
+            class="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
             <UButton
               color="neutral"
               variant="outline"
               block
+              size="lg"
               @click="router.push(`/customers/${id}`)"
               :disabled="isSubmitting">
+              <UIcon name="i-heroicons-x-mark" class="w-4 h-4 mr-2" />
               Cancel
             </UButton>
             <UButton
@@ -173,8 +176,10 @@ const addAddress = async (event: any) => {
               @click="addAddress"
               color="primary"
               block
+              size="lg"
               :loading="isSubmitting"
               :disabled="isSubmitting">
+              <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-2" />
               Add Address
             </UButton>
           </div>

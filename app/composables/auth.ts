@@ -103,17 +103,42 @@ export const useBetterAuth = () => {
 
   const signOut = async () => {
     try {
-      await client.signOut();
+      // Clear local state first
       globalAuthState.session = null;
       globalAuthState.initialized = false;
+      globalAuthState.loading = true;
 
       // Clear persisted session
       if (process.client) {
         localStorage.removeItem("auth-session");
       }
+
+      // Try to sign out from server
+      try {
+        await client.signOut({
+          fetchOptions: {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        });
+      } catch (serverError) {
+        console.warn(
+          "Server sign out failed, but local state cleared:",
+          serverError
+        );
+        // Continue with local cleanup even if server sign out fails
+      }
+
+      // Force a small delay to ensure state updates
+      await new Promise((resolve) => setTimeout(resolve, 100));
     } catch (error) {
       console.error("Sign out failed:", error);
+
+      // Clear local state even on error
       globalAuthState.session = null;
+      globalAuthState.initialized = false;
 
       // Clear persisted session on error too
       if (process.client) {
