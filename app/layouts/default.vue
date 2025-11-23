@@ -183,8 +183,22 @@ onMounted(() => {
         </nav>
 
         <!-- User Section -->
-        <div class="border-t border-gray-200 dark:border-gray-700 p-4">
-          <div v-if="!isDevelopment" class="flex items-center gap-3 mb-3">
+        <div class="border-t border-gray-200 dark:border-gray-700 p-4 space-y-3">
+          <!-- Color Mode Toggle -->
+          <div class="flex items-center justify-between px-2">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Theme</span>
+            <ClientOnly>
+              <UButton
+                :icon="$colorMode.value === 'dark' ? 'i-heroicons-moon' : 'i-heroicons-sun'"
+                size="sm"
+                color="neutral"
+                variant="ghost"
+                @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'"
+              />
+            </ClientOnly>
+          </div>
+          
+          <div v-if="!isDevelopment" class="flex items-center gap-3">
             <UAvatar
               :alt="user?.name || user?.email || 'User'"
               size="sm"
@@ -203,7 +217,7 @@ onMounted(() => {
             </div>
           </div>
           
-          <div v-else class="flex items-center gap-3 mb-3">
+          <div v-else class="flex items-center gap-3">
             <UAvatar
               size="sm"
               class="bg-yellow-500"
