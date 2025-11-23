@@ -10,7 +10,22 @@ const globalAuthState = reactive({
   loading: true,
   initialized: false,
   initPromise: null as Promise<void> | null,
+  hydrated: false,
 });
+
+// Check for persisted session on client-side
+if (process.client) {
+  const persistedSession = localStorage.getItem("auth-session");
+  if (persistedSession) {
+    try {
+      globalAuthState.session = JSON.parse(persistedSession);
+      globalAuthState.loading = false;
+    } catch (error) {
+      console.error("Failed to parse persisted session:", error);
+      localStorage.removeItem("auth-session");
+    }
+  }
+}
 
 export const useBetterAuth = () => {
   const client = useAuthClient();
@@ -26,16 +41,33 @@ export const useBetterAuth = () => {
     if (globalAuthState.initialized) return;
     if (globalAuthState.initPromise) return globalAuthState.initPromise;
 
+    globalAuthState.loading = true;
     globalAuthState.initPromise = (async () => {
       try {
         const result = await client.useSession(useFetch);
         globalAuthState.session = result.data.value;
-        globalAuthState.loading = result.isPending;
-        globalAuthState.initialized = true;
-      } catch (error) {
-        console.error("Failed to initialize session:", error);
+
+        // Persist session to localStorage
+        if (process.client && result.data.value) {
+          localStorage.setItem(
+            "auth-session",
+            JSON.stringify(result.data.value)
+          );
+        }
+
         globalAuthState.loading = false;
         globalAuthState.initialized = true;
+        globalAuthState.hydrated = true;
+      } catch (error) {
+        console.error("Failed to initialize session:", error);
+        globalAuthState.session = null;
+        globalAuthState.loading = false;
+        globalAuthState.initialized = true;
+
+        // Clear persisted session on error
+        if (process.client) {
+          localStorage.removeItem("auth-session");
+        }
       } finally {
         globalAuthState.initPromise = null;
       }
@@ -73,22 +105,36 @@ export const useBetterAuth = () => {
     try {
       await client.signOut();
       globalAuthState.session = null;
+      globalAuthState.initialized = false;
+
+      // Clear persisted session
+      if (process.client) {
+        localStorage.removeItem("auth-session");
+      }
     } catch (error) {
       console.error("Sign out failed:", error);
       globalAuthState.session = null;
+
+      // Clear persisted session on error too
+      if (process.client) {
+        localStorage.removeItem("auth-session");
+      }
     } finally {
       globalAuthState.loading = false;
     }
   };
 
-  // Initialize on first use (client-side only) - but only once
+  // Initialize on first use (client-side only) - but only once, with hydration check
   if (
     process.client &&
     !globalAuthState.initialized &&
     !globalAuthState.initPromise
   ) {
-    nextTick(() => {
-      initSession();
+    // Wait for hydration to complete before initializing
+    onMounted(() => {
+      if (!globalAuthState.hydrated && !globalAuthState.session) {
+        initSession();
+      }
     });
   }
 

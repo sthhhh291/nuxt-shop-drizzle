@@ -1,55 +1,45 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
-  // Only run on client-side to avoid SSR issues
-  if (process.server) return;
-
-  const isUserNavigatingToTheApp =
-    to.path.startsWith("/") && !to.path.startsWith("/auth");
-  if (!isUserNavigatingToTheApp) {
+  // Skip middleware for auth pages
+  if (to.path.startsWith("/auth")) {
     return;
   }
 
   // Check if auth is disabled in development
   const config = useRuntimeConfig();
   if (config.public.disableAuth) {
-    console.log("Auth middleware bypassed - dev mode enabled");
     return;
   }
 
-  // If coming from login page, give more time for auth state to propagate
-  const isComingFromLogin = from?.path === "/auth/login";
+  // Only run on client-side to avoid SSR issues, but with better hydration handling
+  if (process.server) {
+    return;
+  }
+
+  // Wait for hydration to complete
+  await nextTick();
 
   const { isAuthenticated, loading, initSession } = useBetterAuth();
 
-  console.log(
-    "Auth middleware - to:",
-    to.path,
-    "from:",
-    from?.path,
-    "isAuthenticated:",
-    isAuthenticated.value,
-    "loading:",
-    loading.value
-  );
+  // Always try to initialize session if not already done
+  if (!isAuthenticated.value && !loading.value) {
+    try {
+      await initSession();
 
-  // If not loading and not authenticated, try to initialize once
-  if (!loading.value && !isAuthenticated.value) {
-    await initSession();
+      // Give some time for session state to update
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    } catch (error) {
+      console.error("Auth initialization failed:", error);
+    }
   }
 
-  // Give the auth system more time if coming from login
-  const waitTime = isComingFromLogin ? 1000 : 300;
+  // Wait a bit more if still loading
   if (loading.value) {
-    await new Promise((resolve) => setTimeout(resolve, waitTime));
+    await new Promise((resolve) => setTimeout(resolve, 200));
   }
 
-  console.log(
-    "Auth middleware after wait - isAuthenticated:",
-    isAuthenticated.value
-  );
-
-  // After initialization attempt, redirect if still not authenticated
-  if (!isAuthenticated.value) {
-    console.log("Redirecting to login from middleware");
+  // Final check - redirect if not authenticated
+  if (!isAuthenticated.value && !loading.value) {
+    console.log("Redirecting to login - not authenticated");
     return navigateTo("/auth/login");
   }
 });
