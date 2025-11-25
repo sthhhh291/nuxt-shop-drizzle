@@ -223,7 +223,7 @@ const dropdownItems = [
               v-for="estimate in car.estimates"
               :key="estimate.id"
               class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-              <div class="flex items-center justify-between mb-3">
+              <!-- <div class="flex items-center justify-between mb-3">
                 <div>
                   <h4 class="font-medium text-gray-900 dark:text-white">
                     Estimate #{{ estimate.id }}
@@ -239,8 +239,8 @@ const dropdownItems = [
                   variant="subtle">
                   {{ estimate.estimate_type }}
                 </UBadge>
-              </div>
-
+              </div> -->
+<EstimateCardComponent :estimate="estimate" />
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <p class="text-gray-500 dark:text-gray-400">Hours</p>

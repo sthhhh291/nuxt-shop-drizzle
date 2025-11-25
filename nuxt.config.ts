@@ -11,6 +11,18 @@ export default defineNuxtConfig({
     "@nuxt/test-utils",
     "@nuxt/ui",
   ],
+  app: {
+    head: { 
+    title: "Chuck's Car Care",
+    meta: [
+      { name: 'description', content: "Chuck's Car Care - Your one-stop shop for all car maintenance needs." },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+    ],
+    link: [
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+    ],
+   },
+  },
 
   // Runtime config for client-side access
   runtimeConfig: {
