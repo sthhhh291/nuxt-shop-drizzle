@@ -20,15 +20,19 @@ export default defineEventHandler(async (event) => {
   const carId = parsedId.data.id;
 
   const carSchema = z.object({
-    make: z.string().min(1, "Make is required"),
+   make: z.string().min(1, "Make is required"),
     model: z.string().min(1, "Model is required"),
     year: z
       .number()
       .int()
       .min(1886, "Year must be valid")
       .max(new Date().getFullYear(), "Year cannot be in the future"),
-    vin: z.string().min(1, "VIN is required"),
-    customer_id: z.number().int().min(1, "Customer ID is required"),
+    engine: z.string().optional(),
+    vin: z.string().optional(),
+    license: z.string().optional(),
+    fleet_no: z.string().optional(),
+    notes: z.string().optional(),
+    customer_id: z.number().int().min(1, "Customer ID is required"), 
   });
 
   if (event.req.method === "PUT") {

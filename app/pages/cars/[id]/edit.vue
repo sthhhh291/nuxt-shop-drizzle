@@ -11,14 +11,30 @@ const { data: car } = await useFetch<Car>(`/api/cars/${id}`, {
 
 const carSchema = z.object({
   make: z.string().min(1, "Make is required"),
-  model: z.string().min(1, "Model is required"),
-  year: z
-    .number()
-    .min(1886, "Year must be valid")
-    .max(new Date().getFullYear() + 1, "Year cannot be in the future"),
-  notes: z.string().optional(),
-  vin: z.string().optional(),
-  engine: z.string().optional(),
+    model: z.string().min(1, "Model is required"),
+    year: z
+      .number()
+      .int()
+      .min(1886, "Year must be valid")
+      .max(new Date().getFullYear(), "Year cannot be in the future"),
+    engine: z.string().optional(),
+    vin: z.string().optional(),
+    license: z.string().optional(),
+    fleet_no: z.string().optional(),
+    notes: z.string().optional(),
+    customer_id: z.number().int().min(1, "Customer ID is required"), 
+});
+
+const formData = ref({
+  make: car.value?.make || "",
+  model: car.value?.model || "",
+  year: car.value?.year || new Date().getFullYear(),
+  engine: car.value?.engine || "",
+  vin: car.value?.vin || "",
+  license: car.value?.license || "",
+  fleet: car.value?.fleet || "",
+  notes: car.value?.notes || "",
+  customer_id: car.value?.customer_id || null,
 });
 
 // Popular car makes for better UX
@@ -85,15 +101,24 @@ const isLoading = computed(() => !car.value);
 
 const updateCar = async (event: any) => {
   if (!car.value) return;
+  console.log("Form submitted with data:", car.value);
 
   try {
     isSubmitting.value = true;
 
     const validatedData = carSchema.parse({
-      make: car.value.make,
-      model: car.value.model,
-      year: car.value.year,
+      make: formData.value.make,
+      model: formData.value.model,
+      year: formData.value.year,
+      engine: formData.value.engine,
+      vin: formData.value.vin,
+      license: formData.value.license,
+      fleet_no: formData.value.fleet,
+      notes: formData.value.notes,
+      customer_id: formData.value.customer_id,
     });
+
+    console.log("Updating car with data:", validatedData);
 
     await $fetch(`/api/cars/${id}`, {
       method: "PUT",
@@ -217,17 +242,16 @@ const updateCar = async (event: any) => {
                   </USelectMenu>
                 </UFormGroup>
 
-                <UFormGroup label="Color" name="color">
-                  <USelect
-                    v-model="car.color"
-                    :items="carColors"
-                    placeholder="Select color (optional)"
+                <UFormGroup label="Engine" name="engine">
+                  <UInput
+                    v-model="car.engine"
+                    placeholder="Enter engine details (optional)"
                     size="lg"
                     :disabled="isSubmitting">
                     <template #leading>
                       <UIcon name="i-heroicons-swatch" class="w-4 h-4" />
                     </template>
-                  </USelect>
+                  </UInput>
                 </UFormGroup>
               </div>
             </div>
@@ -241,35 +265,47 @@ const updateCar = async (event: any) => {
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <UFormGroup
-                  label="Mileage"
-                  name="mileage"
+                  label="Vin"
+                  name="vin"
                   help="Current odometer reading">
                   <UInput
-                    v-model.number="car.mileage"
-                    type="number"
-                    placeholder="Enter mileage"
+                    v-model.number="car.vin"
+                    type="text"
+                    placeholder="Vin"
                     icon="i-heroicons-chart-bar"
                     size="lg"
                     :disabled="isSubmitting" />
                 </UFormGroup>
 
                 <UFormGroup
-                  label="VIN"
-                  name="vin"
-                  help="Vehicle Identification Number">
+                  label="License Plate"
+                  name="license"
+                  help="License plate number">
                   <UInput
-                    v-model="car.vin"
-                    placeholder="Enter VIN (optional)"
+                    v-model="car.license"
+                    placeholder="Enter license plate (optional)"
                     icon="i-heroicons-hashtag"
                     size="lg"
                     maxlength="17"
                     :disabled="isSubmitting" />
                 </UFormGroup>
+                <UFormGroup
+                  label="Fleet Number"
+                  name="fleet_no"
+                  help="Fleet identification number">
+                  <UInput
+                    v-model="car.fleet"
+                    placeholder="Enter fleet number (optional)"
+                    icon="i-heroicons-briefcase"
+                    size="lg"
+                    :disabled="isSubmitting" />
+                    <UInput v-model="car.customer_id" type="hidden" />
+                </UFormGroup>
               </div>
             </div>
 
             <!-- Vehicle Preview -->
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border">
+            <!-- <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border">
               <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-4"
                 >Vehicle Preview</h4
               >
@@ -300,7 +336,7 @@ const updateCar = async (event: any) => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> -->
 
             <div
               class="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
