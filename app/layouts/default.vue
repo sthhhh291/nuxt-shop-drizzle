@@ -8,6 +8,7 @@ const devBypassAuth = computed(() => isDevelopment || isAuthenticated.value);
 
 // Sidebar state
 const isSidebarOpen = ref(false);
+const isSidebarCollapsed = ref(false);
 const isMobile = ref(false);
 
 // Create a reactive key that changes when auth state changes
@@ -171,21 +172,27 @@ onMounted(() => {
     <div v-else class="flex min-h-screen" :class="{ 'pt-6': isDevelopment }">
       <!-- Sidebar -->
       <aside
-        class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
+        class="fixed inset-y-0 left-0 z-40 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-all duration-200 ease-in-out lg:static lg:inset-0"
         :class="{
           'translate-x-0': isSidebarOpen,
           '-translate-x-full': !isSidebarOpen,
           'top-6': isDevelopment,
+          'w-64': !isSidebarCollapsed,
+          'w-16': isSidebarCollapsed && !isMobile,
+          'lg:translate-x-0': !isMobile
         }"
         :style="isDevelopment ? { top: '24px' } : {}">
         <!-- Sidebar Header -->
         <div
-          class="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
-          <div class="flex items-center gap-2">
+          class="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700"
+          :class="{ 'px-3': isSidebarCollapsed }">
+          <div class="flex items-center gap-2 overflow-hidden">
             <UIcon
               name="i-heroicons-wrench-screwdriver"
-              class="text-2xl text-primary-600 dark:text-primary-400" />
-            <h1 class="text-lg font-bold text-gray-900 dark:text-white">
+              class="text-2xl text-primary-600 dark:text-primary-400 shrink-0" />
+            <h1 
+              v-show="!isSidebarCollapsed"
+              class="text-lg font-bold text-gray-900 dark:text-white whitespace-nowrap">
               Shop Manager
             </h1>
           </div>
@@ -197,6 +204,15 @@ onMounted(() => {
             icon="i-heroicons-x-mark"
             class="lg:hidden"
             @click="isSidebarOpen = false" />
+            
+          <!-- Collapse button for desktop -->
+          <UButton
+            v-show="!isMobile"
+            variant="ghost"
+            size="sm"
+            :icon="isSidebarCollapsed ? 'i-heroicons-chevron-right' : 'i-heroicons-chevron-left'"
+            class="hidden lg:block"
+            @click="isSidebarCollapsed = !isSidebarCollapsed" />
         </div>
 
         <!-- Navigation -->
@@ -205,23 +221,36 @@ onMounted(() => {
             v-for="item in navigationItems"
             :key="item.to"
             :to="item.to"
-            class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-            :class="
+            class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 group relative"
+            :class="[
               isActiveRoute(item.to) ?
                 'bg-primary-50 dark:bg-primary-950 text-primary-700 dark:text-primary-300 border-r-2 border-primary-500'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-            ">
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700',
+              isSidebarCollapsed ? 'justify-center' : ''
+            ]">
             <UIcon :name="item.icon" class="text-lg shrink-0" />
-            <span>{{ item.label }}</span>
+            <span v-show="!isSidebarCollapsed">{{ item.label }}</span>
+            
+            <!-- Tooltip for collapsed sidebar -->
+            <div
+              v-if="isSidebarCollapsed"
+              class="hidden group-hover:block absolute left-full ml-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap z-50">
+              {{ item.label }}
+            </div>
           </NuxtLink>
         </nav>
 
         <!-- User Section -->
         <div
-          class="border-t border-gray-200 dark:border-gray-700 p-4 space-y-3">
+          class="border-t border-gray-200 dark:border-gray-700 p-4 space-y-3"
+          :class="{ 'px-2': isSidebarCollapsed }">
           <!-- Color Mode Toggle -->
-          <div class="flex items-center justify-between px-2">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Theme</span>
+          <div 
+            class="flex items-center justify-between"
+            :class="isSidebarCollapsed ? 'justify-center px-0' : 'px-2'">
+            <span 
+              v-show="!isSidebarCollapsed"
+              class="text-sm text-gray-600 dark:text-gray-400">Theme</span>
             <ClientOnly>
               <UButton
                 :icon="
@@ -239,7 +268,10 @@ onMounted(() => {
             </ClientOnly>
           </div>
 
-          <div v-if="!isDevelopment" class="flex items-center gap-3">
+          <div 
+            v-if="!isDevelopment" 
+            class="flex items-center gap-3"
+            :class="{ 'flex-col': isSidebarCollapsed }">
             <UAvatar
               :alt="user?.name || user?.email || 'User'"
               size="sm"
@@ -247,7 +279,7 @@ onMounted(() => {
               {{ (user?.name || user?.email || "U")?.[0]?.toUpperCase() }}
             </UAvatar>
 
-            <div class="flex-1 min-w-0">
+            <div v-show="!isSidebarCollapsed" class="flex-1 min-w-0">
               <p
                 class="text-sm font-medium text-gray-900 dark:text-white truncate">
                 {{ user?.name || "User" }}
@@ -258,10 +290,13 @@ onMounted(() => {
             </div>
           </div>
 
-          <div v-else class="flex items-center gap-3">
+          <div 
+            v-else 
+            class="flex items-center gap-3"
+            :class="{ 'flex-col': isSidebarCollapsed }">
             <UAvatar size="sm" class="bg-yellow-500"> D </UAvatar>
 
-            <div class="flex-1 min-w-0">
+            <div v-show="!isSidebarCollapsed" class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-900 dark:text-white">
                 Dev Mode
               </p>
@@ -271,7 +306,15 @@ onMounted(() => {
             </div>
           </div>
 
-          <Signout v-if="!isDevelopment" class="w-full" />
+          <Signout v-if="!isDevelopment && !isSidebarCollapsed" class="w-full" />
+          <UButton
+            v-if="!isDevelopment && isSidebarCollapsed"
+            icon="i-heroicons-arrow-right-on-rectangle"
+            size="sm"
+            color="red"
+            variant="ghost"
+            class="w-full"
+            @click="() => {}" />
         </div>
       </aside>
 
