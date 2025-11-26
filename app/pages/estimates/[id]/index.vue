@@ -786,6 +786,10 @@ onMounted(() => {
               <h3 class="text-lg font-semibold">Actions</h3>
             </template>
             <div class="space-y-3">
+              <UButton color="primary" block @click="router.push(`/estimates/${estimate.id}/edit`)">
+                <UIcon name="i-heroicons-pencil" class="w-4 h-4 mr-2" />
+                Edit Estimate
+              </UButton>
               <UButton color="primary" block @click="router.push(`/estimates/${estimate.id}/print`)">
                 <UIcon name="i-heroicons-printer" class="w-4 h-4 mr-2" />
                 Print
