@@ -64,6 +64,11 @@ const navigationItems = [
     icon: "i-heroicons-chart-bar",
     to: "/reports",
   },
+  {
+    label: "Quick Estimate",
+    icon: "i-heroicons-lightning-bolt",
+    to: "/estimates/calculate",
+  },
 ];
 
 // Minimal logging only for authentication changes (not on every render)
@@ -179,7 +184,7 @@ onMounted(() => {
           'top-6': isDevelopment,
           'w-64': !isSidebarCollapsed,
           'w-16': isSidebarCollapsed && !isMobile,
-          'lg:translate-x-0': !isMobile
+          'lg:translate-x-0': !isMobile,
         }"
         :style="isDevelopment ? { top: '24px' } : {}">
         <!-- Sidebar Header -->
@@ -190,7 +195,7 @@ onMounted(() => {
             <UIcon
               name="i-heroicons-wrench-screwdriver"
               class="text-2xl text-primary-600 dark:text-primary-400 shrink-0" />
-            <h1 
+            <h1
               v-show="!isSidebarCollapsed"
               class="text-lg font-bold text-gray-900 dark:text-white whitespace-nowrap">
               Shop Manager
@@ -204,13 +209,17 @@ onMounted(() => {
             icon="i-heroicons-x-mark"
             class="lg:hidden"
             @click="isSidebarOpen = false" />
-            
+
           <!-- Collapse button for desktop -->
           <UButton
             v-show="!isMobile"
             variant="ghost"
             size="sm"
-            :icon="isSidebarCollapsed ? 'i-heroicons-chevron-right' : 'i-heroicons-chevron-left'"
+            :icon="
+              isSidebarCollapsed ?
+                'i-heroicons-chevron-right'
+              : 'i-heroicons-chevron-left'
+            "
             class="hidden lg:block"
             @click="isSidebarCollapsed = !isSidebarCollapsed" />
         </div>
@@ -226,11 +235,11 @@ onMounted(() => {
               isActiveRoute(item.to) ?
                 'bg-primary-50 dark:bg-primary-950 text-primary-700 dark:text-primary-300 border-r-2 border-primary-500'
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700',
-              isSidebarCollapsed ? 'justify-center' : ''
+              isSidebarCollapsed ? 'justify-center' : '',
             ]">
             <UIcon :name="item.icon" class="text-lg shrink-0" />
             <span v-show="!isSidebarCollapsed">{{ item.label }}</span>
-            
+
             <!-- Tooltip for collapsed sidebar -->
             <div
               v-if="isSidebarCollapsed"
@@ -245,12 +254,14 @@ onMounted(() => {
           class="border-t border-gray-200 dark:border-gray-700 p-4 space-y-3"
           :class="{ 'px-2': isSidebarCollapsed }">
           <!-- Color Mode Toggle -->
-          <div 
+          <div
             class="flex items-center justify-between"
             :class="isSidebarCollapsed ? 'justify-center px-0' : 'px-2'">
-            <span 
+            <span
               v-show="!isSidebarCollapsed"
-              class="text-sm text-gray-600 dark:text-gray-400">Theme</span>
+              class="text-sm text-gray-600 dark:text-gray-400"
+              >Theme</span
+            >
             <ClientOnly>
               <UButton
                 :icon="
@@ -268,8 +279,8 @@ onMounted(() => {
             </ClientOnly>
           </div>
 
-          <div 
-            v-if="!isDevelopment" 
+          <div
+            v-if="!isDevelopment"
             class="flex items-center gap-3"
             :class="{ 'flex-col': isSidebarCollapsed }">
             <UAvatar
@@ -290,8 +301,8 @@ onMounted(() => {
             </div>
           </div>
 
-          <div 
-            v-else 
+          <div
+            v-else
             class="flex items-center gap-3"
             :class="{ 'flex-col': isSidebarCollapsed }">
             <UAvatar size="sm" class="bg-yellow-500"> D </UAvatar>
@@ -306,7 +317,9 @@ onMounted(() => {
             </div>
           </div>
 
-          <Signout v-if="!isDevelopment && !isSidebarCollapsed" class="w-full" />
+          <Signout
+            v-if="!isDevelopment && !isSidebarCollapsed"
+            class="w-full" />
           <UButton
             v-if="!isDevelopment && isSidebarCollapsed"
             icon="i-heroicons-arrow-right-on-rectangle"
