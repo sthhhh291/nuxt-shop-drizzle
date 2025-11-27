@@ -66,7 +66,7 @@ const navigationItems = [
   },
   {
     label: "Quick Estimate",
-    icon: "i-heroicons-lightning-bolt",
+    icon: "i-heroicons-bolt",
     to: "/estimates/calculate",
   },
 ];
@@ -324,7 +324,7 @@ onMounted(() => {
             v-if="!isDevelopment && isSidebarCollapsed"
             icon="i-heroicons-arrow-right-on-rectangle"
             size="sm"
-            color="red"
+            color="warning"
             variant="ghost"
             class="w-full"
             @click="() => {}" />

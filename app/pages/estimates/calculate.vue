@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// import { markupMatrix } from '~/composables/markup';
 // Enhanced interfaces with ID for better tracking
 interface Labor {
   id: string;
@@ -13,6 +14,7 @@ interface Part {
   description: string;
   quantity: number;
   unit_price: number;
+  unit_cost:number;
   price: number;
 }
 
@@ -78,6 +80,7 @@ const addPart = () => {
     description: "",
     quantity: 1,
     unit_price: 0,
+    unit_cost: 0,
     price: 0,
   });
 };
@@ -86,10 +89,29 @@ const removePart = (index: number) => {
   parts.value.splice(index, 1);
 };
 
+// implementing markup matrix
+// const markupMatrix = [
+//   { costLimit: 5, markup: 3} ,
+//   { costLimit: 10, markup: 2.75 },
+//   { costLimit: 25, markup: 2 },
+//   { costLimit: 50, markup: 1.86 },
+//   { costLimit: 100, markup: 1.52 },
+//   { costLimit: 250, markup: 1.43 },
+//   { costLimit: 500, markup: 1.34 },
+//   { costLimit: 1000, markup: 1.26 },
+//   { costLimit: Infinity, markup: 1.21 },
+// ];
+
 const calculatePartPrice = (part: Part) => {
   const quantity = Number(part.quantity) || 0;
   const unitPrice = Number(part.unit_price) || 0;
-  part.price = quantity * unitPrice;
+  const unitCost = Number(part.unit_cost) || 0;
+  const markup = calculateMarkup(unitCost);
+  let estPrice = unitCost * markup;
+  estPrice < unitPrice || unitPrice === 0
+    ? estPrice = estPrice
+    : estPrice = unitPrice
+  part.price = quantity * estPrice;
 };
 
 const totalPartsCost = computed(() => {
@@ -103,6 +125,7 @@ const addOil = () => {
     description: "",
     quantity: 1,
     unit_price: 0,
+    unit_cost: 0,
     price: 0,
   });
 };
@@ -384,7 +407,7 @@ onMounted(() => {
                 v-for="(part, index) in parts"
                 :key="part.id"
                 class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
                   <div class="md:col-span-2">
                     <label
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
@@ -406,6 +429,20 @@ onMounted(() => {
                       min="1"
                       placeholder="1"
                       icon="i-heroicons-hashtag"
+                      @update:model-value="() => calculatePartPrice(part)" />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                      >Unit Cost</label
+                    >
+                    <UInput
+                      v-model.number="part.unit_cost"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      icon="i-heroicons-currency-dollar"
                       @update:model-value="() => calculatePartPrice(part)" />
                   </div>
                   <div>
@@ -440,6 +477,11 @@ onMounted(() => {
                       variant="ghost"
                       size="sm" />
                   </div>
+                  <!-- delete later. just for testing markup matrix -->
+                  <div class="md:col-span-6 text-sm text-gray-500 dark:text-gray-400">
+                    Unit Cost: {{ formatCurrency(part.unit_cost) }} |
+                   Markup Factor {{(part.price / part.unit_cost).toFixed(2) }}x
+                    </div>
                 </div>
               </div>
 
