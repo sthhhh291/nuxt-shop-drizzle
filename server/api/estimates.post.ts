@@ -36,7 +36,7 @@ export default eventHandler(async (event) => {
       .values(dbEstimate)
       .returning();
 
-    return insertedEstimate;
+    return insertedEstimate[0];
   } catch (error: unknown) {
     event.res.statusCode = 500;
     if (error instanceof Error) {

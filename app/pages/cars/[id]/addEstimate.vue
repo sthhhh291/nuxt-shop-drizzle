@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { couldStartTrivia } from "typescript";
 import { z } from "zod";
-import type { Estimate } from "~~/db/schema";
+import { labor, type Estimate } from "~~/db/schema";
 
 const { id } = useRoute().params;
 const router = useRouter();
 const toast = useToast();
 
+//estimateate form schema
 const estimateSchema = z.object({
   car_id: z.number().min(1, "Car ID is required"),
   date: z.string().min(10, "Date is required").max(10),
@@ -16,6 +18,35 @@ const estimateSchema = z.object({
   public_notes: z.string().optional(),
 });
 
+//labor form schema
+const laborSchema = z.object({  
+  estimate_id: z.number().min(1, "Estimate ID is required"),
+  description: z.string().min(1, "Description is required").max(500),
+  hours: z.number().min(0.1, "Hours must be at least 0.1"),
+  rate: z.number().min(0, "Rate must be 0 or greater"),
+});
+
+//parts form schema
+const partsSchema = z.object({  
+  estimate_id: z.number().min(1, "Estimate ID is required"),
+  description: z.string().min(1, "Part name is required").max(255),
+  mfr_no: z.string().max(100).optional(),
+  part_no: z.string().max(100).optional(),
+  quantity: z.number().min(1, "Quantity must be at least 1"),
+  cost: z.number().min(0, "Cost must be 0 or greater"),
+  list_price: z.number().min(0, "List price must be 0 or greater"),
+  unit_price: z.number().min(0, "Unit price must be 0 or greater"),
+});
+
+//oil/fluids form schema
+const oilFluidsSchema = z.object({  
+  estimate_id: z.number().min(1, "Estimate ID is required"),
+  description: z.string().min(1, "Oil/Fluid name is required").max(255),
+  quantity: z.number().min(0.1, "Quantity must be at least 0.1"),
+  cost: z.number().min(0, "Cost must be 0 or greater"),
+  unit_price: z.number().min(0, "Unit price must be 0 or greater"),
+});
+
 const formState = reactive({
   date: new Date().toISOString().split("T")[0],
   hours_taken: 0,
@@ -23,6 +54,9 @@ const formState = reactive({
   estimate_type: "",
   private_notes: "",
   public_notes: "",
+  labor_items: [] as Array<z.infer<typeof laborSchema>>,
+  parts_items: [] as Array<z.infer<typeof partsSchema>>,
+  oil_fluids_items: [] as Array<z.infer<typeof oilFluidsSchema>>,
 });
 
 const isSubmitting = ref(false);
@@ -242,7 +276,7 @@ const addEstimate = async (event: any) => {
           <UFormGroup label="Service Type" name="estimate_type" required>
             <USelect
               v-model="formState.estimate_type"
-              :options="estimateTypeOptions"
+              :items="estimateTypeOptions"
               placeholder="Select service type"
               :disabled="isSubmitting" />
           </UFormGroup>

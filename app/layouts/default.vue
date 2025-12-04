@@ -50,20 +50,16 @@ const navigationItems = [
     to: "/cars",
   },
   {
-    label: "Addresses",
-    icon: "i-heroicons-map-pin",
-    to: "/addresses",
-  },
-  {
     label: "Estimates",
     icon: "i-heroicons-document-text",
     to: "/estimates",
   },
-  {
-    label: "Reports",
-    icon: "i-heroicons-chart-bar",
-    to: "/reports",
-  },
+  //disable reports for now
+  // {
+  //   label: "Reports",
+  //   icon: "i-heroicons-chart-bar",
+  //   to: "/reports",
+  // },
   {
     label: "Quick Estimate",
     icon: "i-heroicons-bolt",
