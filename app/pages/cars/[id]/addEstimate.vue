@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { couldStartTrivia } from "typescript";
+import { couldStartTrivia, getModeForResolutionAtIndex } from "typescript";
 import { z } from "zod";
 import { labor, type Estimate } from "~~/db/schema";
 
@@ -19,7 +19,7 @@ const estimateSchema = z.object({
 });
 
 //labor form schema
-const laborSchema = z.object({  
+const laborSchema = z.object({
   estimate_id: z.number().min(1, "Estimate ID is required"),
   description: z.string().min(1, "Description is required").max(500),
   hours: z.number().min(0.1, "Hours must be at least 0.1"),
@@ -27,24 +27,27 @@ const laborSchema = z.object({
 });
 
 //parts form schema
-const partsSchema = z.object({  
+const partsSchema = z.object({
   estimate_id: z.number().min(1, "Estimate ID is required"),
   description: z.string().min(1, "Part name is required").max(255),
-  mfr_no: z.string().max(100).optional(),
-  part_no: z.string().max(100).optional(),
+  mfr_number: z.string().max(100).optional(),
+  part_number: z.string().max(100).optional(),
   quantity: z.number().min(1, "Quantity must be at least 1"),
   cost: z.number().min(0, "Cost must be 0 or greater"),
-  list_price: z.number().min(0, "List price must be 0 or greater"),
+  list: z.number().min(0, "List price must be 0 or greater"),
   unit_price: z.number().min(0, "Unit price must be 0 or greater"),
 });
 
 //oil/fluids form schema
-const oilFluidsSchema = z.object({  
+const oilFluidsSchema = z.object({
   estimate_id: z.number().min(1, "Estimate ID is required"),
-  description: z.string().min(1, "Oil/Fluid name is required").max(255),
+  type: z.string().min(1, "Oil/Fluid type is required").max(255),
+  mfr_number: z.string().max(100).optional(),
+  part_number: z.string().max(100).optional(),
   quantity: z.number().min(0.1, "Quantity must be at least 0.1"),
   cost: z.number().min(0, "Cost must be 0 or greater"),
-  unit_price: z.number().min(0, "Unit price must be 0 or greater"),
+  list: z.number().min(0, "List price must be 0 or greater"),
+  price_per_unit: z.number().min(0, "Price per unit must be 0 or greater"),
 });
 
 const formState = reactive({
@@ -57,6 +60,32 @@ const formState = reactive({
   labor_items: [] as Array<z.infer<typeof laborSchema>>,
   parts_items: [] as Array<z.infer<typeof partsSchema>>,
   oil_fluids_items: [] as Array<z.infer<typeof oilFluidsSchema>>,
+});
+
+const laborFormState = reactive({
+  description: "",
+  hours: 0,
+  rate: 0,
+});
+
+const partsFormState = reactive({
+  description: "",
+  mfr_number: "",
+  part_number: "",
+  quantity: 1,
+  cost: 0,
+  list: 0,
+  unit_price: 0,
+});
+
+const oilFluidsFormState = reactive({
+  type: "",
+  mfr_number: "",
+  part_number: "",
+  quantity: 0,
+  cost: 0,
+  list: 0,
+  price_per_unit: 0,
 });
 
 const isSubmitting = ref(false);
@@ -84,6 +113,7 @@ const addEstimate = async (event: any) => {
   try {
     isSubmitting.value = true;
 
+    // Validate form data
     const validatedData = estimateSchema.parse({
       car_id: Number(id),
       date: formState.date,
@@ -96,12 +126,68 @@ const addEstimate = async (event: any) => {
 
     console.log("Adding estimate:", validatedData);
 
+    //submit estimate data
     const response = await $fetch(`/api/estimates`, {
       method: "POST",
       body: validatedData,
     });
 
     console.log("Estimate added:", response);
+
+    const estimate_id =
+      response && typeof response === "object" && "id" in response ?
+        response.id
+      : null;
+    //submit labor, parts, and oil/fluids items if estimate_id is valid
+    formState.labor_items.forEach(async (laborItem) => {
+      const laborData = laborSchema.parse({
+        estimate_id: estimate_id,
+        description: laborItem.description,
+        hours: laborItem.hours,
+        rate: laborItem.rate,
+      });
+
+      await $fetch(`/api/labor`, {
+        method: "POST",
+        body: laborData,
+      });
+    });
+
+    formState.parts_items.forEach(async (partItem) => {
+      const partsData = partsSchema.parse({
+        estimate_id: estimate_id,
+        description: partItem.description,
+        mfr_number: partItem.mfr_number,
+        part_number: partItem.part_number,
+        quantity: partItem.quantity,
+        cost: partItem.cost,
+        list: partItem.list,
+        unit_price: partItem.unit_price,
+      });
+
+      await $fetch(`/api/parts`, {
+        method: "POST",
+        body: partsData,
+      });
+    });
+
+    formState.oil_fluids_items.forEach(async (oilFluidItem) => {
+      const oilFluidsData = oilFluidsSchema.parse({
+        estimate_id: estimate_id,
+        type: oilFluidItem.type,
+        mfr_number: oilFluidItem.mfr_number || "",
+        part_number: oilFluidItem.part_number || "",
+        quantity: oilFluidItem.quantity,
+        cost: oilFluidItem.cost,
+        list: oilFluidItem.list,
+        price_per_unit: oilFluidItem.unit_price,
+      });
+
+      await $fetch(`/api/oil`, {
+        method: "POST",
+        body: oilFluidsData,
+      });
+    });
 
     toast.add({
       title: "Success!",
@@ -361,33 +447,338 @@ const addEstimate = async (event: any) => {
         </UForm>
       </UCard>
 
-      <!-- Next Steps Info -->
-      <div class="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-        <div class="flex items-start gap-3">
-          <UIcon
-            name="i-heroicons-information-circle"
-            class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-          <div class="text-sm">
-            <h4 class="font-medium text-blue-900 dark:text-blue-100 mb-1"
-              >Next Steps</h4
-            >
-            <p class="text-blue-700 dark:text-blue-200">
-              After creating the estimate, you'll be able to add labor charges,
-              parts, and oil/fluids to complete the estimate.
-            </p>
+      <!-- Labor Items Section -->
+      <UCard class="mt-8">
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon
+              name="i-heroicons-wrench-screwdriver"
+              class="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              Labor Items
+            </h2>
+          </div>
+        </template>
+
+        <div class="space-y-6">
+          <!-- Add Labor Form -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">
+              Add Labor Item
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div class="md:col-span-2">
+                <UInput
+                  type="text"
+                  placeholder="Labor description"
+                  v-model="laborFormState.description" />
+              </div>
+              <div>
+                <UInput
+                  type="number"
+                  placeholder="Hours"
+                  step="0.1"
+                  v-model.number="laborFormState.hours" />
+              </div>
+              <div>
+                <UInput
+                  type="number"
+                  placeholder="Rate ($)"
+                  step="0.01"
+                  v-model.number="laborFormState.rate" />
+              </div>
+            </div>
+            <div class="mt-4">
+              <UButton
+                @click="
+                  formState.labor_items.push({ ...laborFormState });
+                  laborFormState.description = '';
+                  laborFormState.hours = 0;
+                  laborFormState.rate = 0;
+                "
+                :disabled="
+                  !laborFormState.description ||
+                  !laborFormState.hours ||
+                  !laborFormState.rate
+                "
+                size="sm">
+                <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-2" />
+                Add Labor Item
+              </UButton>
+            </div>
+          </div>
+
+          <!-- Labor Items List -->
+          <div v-if="formState.labor_items.length > 0">
+            <div class="space-y-2">
+              <div
+                v-for="(item, index) in formState.labor_items"
+                :key="'labor-' + index"
+                class="flex items-center justify-between p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div class="flex-1">
+                  <div class="font-medium text-gray-900 dark:text-white">
+                    {{ item.description }}
+                  </div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ item.hours }} hours @ ${{ item.rate }}/hr = ${{
+                      (item.hours * item.rate).toFixed(2)
+                    }}
+                  </div>
+                </div>
+                <UButton
+                  @click="formState.labor_items.splice(index, 1)"
+                  color="red"
+                  variant="ghost"
+                  size="sm"
+                  icon="i-heroicons-trash" />
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-center py-8 text-gray-500 dark:text-gray-400">
+            <UIcon
+              name="i-heroicons-wrench-screwdriver"
+              class="w-12 h-12 mx-auto mb-2 opacity-50" />
+            <p>No labor items added yet</p>
           </div>
         </div>
-      </div>
+      </UCard>
 
-      <!-- Debug Test - This should render at the bottom -->
-      <div
-        class="mt-8 p-4 bg-green-100 dark:bg-green-900/20 rounded-lg border-2 border-green-500">
-        <p class="text-green-800 dark:text-green-200 font-bold text-center">
-          🎯 DEBUG: If you can see this, the entire page is loading correctly!
-        </p>
-        <p class="text-center text-sm mt-2">Car ID: {{ id }}</p>
-        <p class="text-center text-sm">Car Data Valid: {{ isCarDataValid }}</p>
-      </div>
+      <!-- Parts Items Section -->
+      <UCard class="mt-8">
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon
+              name="i-heroicons-cog-6-tooth"
+              class="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              Parts Items
+            </h2>
+          </div>
+        </template>
+
+        <div class="space-y-6">
+          <!-- Add Parts Form -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">
+              Add Parts Item
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <UInput
+                type="text"
+                placeholder="Part description"
+                v-model="partsFormState.description" />
+              <UInput
+                type="text"
+                placeholder="Manufacturer number"
+                v-model="partsFormState.mfr_number" />
+              <UInput
+                type="text"
+                placeholder="Part number"
+                v-model="partsFormState.part_number" />
+              <UInput
+                type="number"
+                placeholder="Quantity"
+                min="1"
+                v-model.number="partsFormState.quantity" />
+              <UInput
+                type="number"
+                placeholder="Cost ($)"
+                step="0.01"
+                v-model.number="partsFormState.cost" />
+              <UInput
+                type="number"
+                placeholder="List price ($)"
+                step="0.01"
+                v-model.number="partsFormState.list" />
+              <UInput
+                type="number"
+                placeholder="Unit price ($)"
+                step="0.01"
+                v-model.number="partsFormState.unit_price" />
+            </div>
+            <div class="mt-4">
+              <UButton
+                @click="
+                  formState.parts_items.push({ ...partsFormState });
+                  partsFormState.description = '';
+                  partsFormState.mfr_number = '';
+                  partsFormState.part_number = '';
+                  partsFormState.quantity = 1;
+                  partsFormState.cost = 0;
+                  partsFormState.list = 0;
+                  partsFormState.unit_price = 0;
+                "
+                :disabled="
+                  !partsFormState.description || !partsFormState.quantity
+                "
+                size="sm">
+                <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-2" />
+                Add Parts Item
+              </UButton>
+            </div>
+          </div>
+
+          <!-- Parts Items List -->
+          <div v-if="formState.parts_items.length > 0">
+            <div class="space-y-2">
+              <div
+                v-for="(item, index) in formState.parts_items"
+                :key="'parts-' + index"
+                class="flex items-center justify-between p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div class="flex-1">
+                  <div class="font-medium text-gray-900 dark:text-white">
+                    {{ item.description }}
+                  </div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">
+                    Qty: {{ item.quantity }} @ ${{ item.unit_price }} = ${{
+                      (item.quantity * item.unit_price).toFixed(2)
+                    }}
+                  </div>
+                  <div
+                    v-if="item.mfr_number || item.part_number"
+                    class="text-xs text-gray-500 dark:text-gray-500">
+                    <span v-if="item.mfr_number"
+                      >MFR: {{ item.mfr_number }}</span
+                    >
+                    <span v-if="item.mfr_number && item.part_number"> | </span>
+                    <span v-if="item.part_number"
+                      >Part #: {{ item.part_number }}</span
+                    >
+                  </div>
+                </div>
+                <UButton
+                  @click="formState.parts_items.splice(index, 1)"
+                  color="red"
+                  variant="ghost"
+                  size="sm"
+                  icon="i-heroicons-trash" />
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-center py-8 text-gray-500 dark:text-gray-400">
+            <UIcon
+              name="i-heroicons-cog-6-tooth"
+              class="w-12 h-12 mx-auto mb-2 opacity-50" />
+            <p>No parts items added yet</p>
+          </div>
+        </div>
+      </UCard>
+
+      <!-- Oil/Fluids Items Section -->
+      <UCard class="mt-8">
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon
+              name="i-heroicons-beaker"
+              class="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              Oil/Fluids Items
+            </h2>
+          </div>
+        </template>
+
+        <div class="space-y-6">
+          <!-- Add Oil/Fluids Form -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">
+              Add Oil/Fluid Item
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <UInput
+                type="text"
+                placeholder="Oil/Fluid type"
+                v-model="oilFluidsFormState.type" />
+              <UInput
+                type="number"
+                placeholder="Quantity"
+                step="0.1"
+                v-model.number="oilFluidsFormState.quantity" />
+              <UInput
+                type="number"
+                placeholder="List price ($)"
+                step="0.01"
+                v-model.number="oilFluidsFormState.list" />
+              <UInput
+                type="number"
+                placeholder="Unit price ($)"
+                step="0.01"
+                v-model.number="oilFluidsFormState.unit_price" />
+            </div>
+            <div class="mt-4">
+              <UButton
+                @click="
+                  formState.oil_fluids_items.push({ ...oilFluidsFormState });
+                  oilFluidsFormState.type = '';
+                  oilFluidsFormState.quantity = 0;
+                  oilFluidsFormState.list = 0;
+                  oilFluidsFormState.unit_price = 0;
+                "
+                :disabled="
+                  !oilFluidsFormState.type || !oilFluidsFormState.quantity
+                "
+                size="sm">
+                <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-2" />
+                Add Oil/Fluid Item
+              </UButton>
+            </div>
+          </div>
+
+          <!-- Oil/Fluids Items List -->
+          <div v-if="formState.oil_fluids_items.length > 0">
+            <div class="space-y-2">
+              <div
+                v-for="(item, index) in formState.oil_fluids_items"
+                :key="'oilfluids-' + index"
+                class="flex items-center justify-between p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div class="flex-1">
+                  <div class="font-medium text-gray-900 dark:text-white">
+                    {{ item.type }}
+                  </div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">
+                    Qty: {{ item.quantity }} @ ${{ item.unit_price }} = ${{
+                      (item.quantity * item.unit_price).toFixed(2)
+                    }}
+                  </div>
+                </div>
+                <UButton
+                  @click="formState.oil_fluids_items.splice(index, 1)"
+                  color="red"
+                  variant="ghost"
+                  size="sm"
+                  icon="i-heroicons-trash" />
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-center py-8 text-gray-500 dark:text-gray-400">
+            <UIcon
+              name="i-heroicons-beaker"
+              class="w-12 h-12 mx-auto mb-2 opacity-50" />
+            <p>No oil/fluid items added yet</p>
+          </div>
+        </div>
+      </UCard>
+
+      <!-- Final Actions Card -->
+      <UCard class="mt-8">
+        <div class="flex gap-3">
+          <UButton
+            color="neutral"
+            variant="outline"
+            block
+            @click="router.back()"
+            :disabled="isSubmitting">
+            Cancel
+          </UButton>
+          <UButton
+            @click="addEstimate"
+            color="primary"
+            block
+            :loading="isSubmitting"
+            :disabled="isSubmitting">
+            Create Complete Estimate
+          </UButton>
+        </div>
+      </UCard>
     </div>
   </UContainer>
 </template>
