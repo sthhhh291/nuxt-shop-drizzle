@@ -13,40 +13,47 @@ function debounce<T extends (...args: any[]) => any>(func: T, wait: number) {
 const toast = useToast();
 
 // Fetch admin settings
-const { data: adminSettings, refresh: refreshAdmin } = await useFetch<AdminPanel[]>('/api/admin');
+const { data: adminSettings, refresh: refreshAdmin } =
+  await useFetch<AdminPanel[]>("/api/admin");
 const settings = computed(() => adminSettings.value?.[0]);
 
 // Fetch employees
-const { data: employees, refresh: refreshEmployees } = await useFetch<Employee[]>('/api/employees');
+const { data: employees, refresh: refreshEmployees } =
+  await useFetch<Employee[]>("/api/employees");
 
 // Fetch markup matrix
-const { data: markupData, refresh: refreshMarkup } = await useFetch<MarkupMatrix[]>('/api/markup');
+const { data: markupData, refresh: refreshMarkup } =
+  await useFetch<MarkupMatrix[]>("/api/markup");
 
 // Fetch customers for autocomplete
-const customerSearch = ref('');
-const customerSearchEdit = ref('');
+const customerSearch = ref("");
+const customerSearchEdit = ref("");
 
-const { data: customerResults, refresh: refreshCustomers } = await useFetch('/api/customers', {
-  query: computed(() => ({ search: customerSearch.value, limit: 50 })),
-  immediate: false,
-  onRequest({ request, options }) {
-    console.log('Fetching customers with params:', options.query);
-  },
-  onResponse({ response }) {
-    console.log('Customer results received:', response._data);
+const { data: customerResults, refresh: refreshCustomers } = await useFetch(
+  "/api/customers",
+  {
+    query: computed(() => ({ search: customerSearch.value, limit: 50 })),
+    immediate: false,
+    onRequest({ request, options }) {
+      console.log("Fetching customers with params:", options.query);
+    },
+    onResponse({ response }) {
+      console.log("Customer results received:", response._data);
+    },
   }
-});
+);
 
-const { data: customerResultsEdit, refresh: refreshCustomersEdit } = await useFetch('/api/customers', {
-  query: computed(() => ({ search: customerSearchEdit.value, limit: 50 })),
-  immediate: false,
-  onRequest({ request, options }) {
-    console.log('Fetching customers (edit) with params:', options.query);
-  },
-  onResponse({ response }) {
-    console.log('Customer results (edit) received:', response._data);
-  }
-});
+const { data: customerResultsEdit, refresh: refreshCustomersEdit } =
+  await useFetch("/api/customers", {
+    query: computed(() => ({ search: customerSearchEdit.value, limit: 50 })),
+    immediate: false,
+    onRequest({ request, options }) {
+      console.log("Fetching customers (edit) with params:", options.query);
+    },
+    onResponse({ response }) {
+      console.log("Customer results (edit) received:", response._data);
+    },
+  });
 
 // Initial load
 refreshCustomers();
@@ -54,18 +61,18 @@ refreshCustomersEdit();
 
 // Debounced search handlers
 const debouncedSearchCustomers = debounce(() => {
-  console.log('Searching for:', customerSearch.value);
+  console.log("Searching for:", customerSearch.value);
   refreshCustomers();
 }, 300);
 
 const debouncedSearchCustomersEdit = debounce(() => {
-  console.log('Searching (edit) for:', customerSearchEdit.value);
+  console.log("Searching (edit) for:", customerSearchEdit.value);
   refreshCustomersEdit();
 }, 300);
 
 const customerOptions = computed(() => {
   const results = customerResults.value?.customers || [];
-  console.log('Customer options computed:', results.length, 'customers');
+  console.log("Customer options computed:", results.length, "customers");
   return results.map((customer: any) => ({
     id: customer.id,
     label: `${customer.first_name} ${customer.last_name}`,
@@ -75,7 +82,7 @@ const customerOptions = computed(() => {
 
 const customerOptionsEdit = computed(() => {
   const results = customerResultsEdit.value?.customers || [];
-  console.log('Customer options (edit) computed:', results.length, 'customers');
+  console.log("Customer options (edit) computed:", results.length, "customers");
   return results.map((customer: any) => ({
     id: customer.id,
     label: `${customer.first_name} ${customer.last_name}`,
@@ -121,15 +128,15 @@ const startEditAdmin = () => {
 
 const saveAdmin = async () => {
   try {
-    await $fetch('/api/admin', {
-      method: 'PUT',
+    await $fetch("/api/admin", {
+      method: "PUT",
       body: adminForm.value,
     });
     await refreshAdmin();
     editingAdmin.value = false;
-    toast.add({ title: 'Settings updated successfully', color: 'success' });
+    toast.add({ title: "Settings updated successfully", color: "success" });
   } catch (error) {
-    toast.add({ title: 'Failed to update settings', color: 'error' });
+    toast.add({ title: "Failed to update settings", color: "error" });
   }
 };
 
@@ -141,15 +148,15 @@ const cancelEditAdmin = () => {
 // Employee Functions
 const addEmployee = async () => {
   try {
-    await $fetch('/api/employees', {
-      method: 'POST',
+    await $fetch("/api/employees", {
+      method: "POST",
       body: newEmployee.value,
     });
     await refreshEmployees();
     newEmployee.value = {};
-    toast.add({ title: 'Employee added', color: 'success' });
+    toast.add({ title: "Employee added", color: "success" });
   } catch (error) {
-    toast.add({ title: 'Failed to add employee', color: 'error' });
+    toast.add({ title: "Failed to add employee", color: "error" });
   }
 };
 
@@ -161,26 +168,26 @@ const startEditEmployee = (employee: Employee) => {
 const saveEmployee = async (id: number) => {
   try {
     await $fetch(`/api/employees/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: editEmployeeForm.value,
     });
     await refreshEmployees();
     editingEmployee.value = null;
-    toast.add({ title: 'Employee updated', color: 'success' });
+    toast.add({ title: "Employee updated", color: "success" });
   } catch (error) {
-    toast.add({ title: 'Failed to update employee', color: 'error' });
+    toast.add({ title: "Failed to update employee", color: "error" });
   }
 };
 
 const deleteEmployee = async (id: number) => {
-  if (!confirm('Are you sure you want to delete this employee?')) return;
-  
+  if (!confirm("Are you sure you want to delete this employee?")) return;
+
   try {
-    await $fetch(`/api/employees/${id}`, { method: 'DELETE' });
+    await $fetch(`/api/employees/${id}`, { method: "DELETE" });
     await refreshEmployees();
-    toast.add({ title: 'Employee deleted', color: 'success' });
+    toast.add({ title: "Employee deleted", color: "success" });
   } catch (error) {
-    toast.add({ title: 'Failed to delete employee', color: 'error' });
+    toast.add({ title: "Failed to delete employee", color: "error" });
   }
 };
 
@@ -192,15 +199,15 @@ const cancelEditEmployee = () => {
 // Markup Functions
 const addMarkup = async () => {
   try {
-    await $fetch('/api/markup', {
-      method: 'POST',
+    await $fetch("/api/markup", {
+      method: "POST",
       body: newMarkup.value,
     });
     await refreshMarkup();
     newMarkup.value = {};
-    toast.add({ title: 'Markup added', color: 'success' });
+    toast.add({ title: "Markup added", color: "success" });
   } catch (error) {
-    toast.add({ title: 'Failed to add markup', color: 'error' });
+    toast.add({ title: "Failed to add markup", color: "error" });
   }
 };
 
@@ -212,26 +219,26 @@ const startEditMarkup = (markup: MarkupMatrix) => {
 const saveMarkup = async (id: number) => {
   try {
     await $fetch(`/api/markup/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: editMarkupForm.value,
     });
     await refreshMarkup();
     editingMarkup.value = null;
-    toast.add({ title: 'Markup updated', color: 'success' });
+    toast.add({ title: "Markup updated", color: "success" });
   } catch (error) {
-    toast.add({ title: 'Failed to update markup', color: 'error' });
+    toast.add({ title: "Failed to update markup", color: "error" });
   }
 };
 
 const deleteMarkup = async (id: number) => {
-  if (!confirm('Are you sure you want to delete this markup rule?')) return;
-  
+  if (!confirm("Are you sure you want to delete this markup rule?")) return;
+
   try {
-    await $fetch(`/api/markup/${id}`, { method: 'DELETE' });
+    await $fetch(`/api/markup/${id}`, { method: "DELETE" });
     await refreshMarkup();
-    toast.add({ title: 'Markup deleted', color: 'success' });
+    toast.add({ title: "Markup deleted", color: "success" });
   } catch (error) {
-    toast.add({ title: 'Failed to delete markup', color: 'error' });
+    toast.add({ title: "Failed to delete markup", color: "error" });
   }
 };
 
@@ -241,7 +248,10 @@ const cancelEditMarkup = () => {
 };
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
 };
 
 const formatPercent = (value: number) => {
@@ -283,7 +293,8 @@ const formatPercent = (value: number) => {
                     class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3
+                    class="text-lg font-semibold text-gray-900 dark:text-white">
                     Shop Settings
                   </h3>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -305,26 +316,38 @@ const formatPercent = (value: number) => {
           <div v-if="settings" class="space-y-4">
             <template v-if="!editingAdmin">
               <div class="space-y-3">
-                <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span class="text-gray-600 dark:text-gray-400">Tax Rate:</span>
+                <div
+                  class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <span class="text-gray-600 dark:text-gray-400"
+                    >Tax Rate:</span
+                  >
                   <span class="font-semibold text-gray-900 dark:text-white">
                     {{ formatPercent(settings.tax) }}
                   </span>
                 </div>
-                <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span class="text-gray-600 dark:text-gray-400">Labor Rate:</span>
+                <div
+                  class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <span class="text-gray-600 dark:text-gray-400"
+                    >Labor Rate:</span
+                  >
                   <span class="font-semibold text-gray-900 dark:text-white">
                     {{ formatCurrency(settings.labor_rate) }}/hr
                   </span>
                 </div>
-                <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span class="text-gray-600 dark:text-gray-400">Shop Fee Rate:</span>
+                <div
+                  class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <span class="text-gray-600 dark:text-gray-400"
+                    >Shop Fee Rate:</span
+                  >
                   <span class="font-semibold text-gray-900 dark:text-white">
                     {{ formatPercent(settings.shop_fee_rate) }}
                   </span>
                 </div>
-                <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span class="text-gray-600 dark:text-gray-400">Fee Threshold:</span>
+                <div
+                  class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <span class="text-gray-600 dark:text-gray-400"
+                    >Fee Threshold:</span
+                  >
                   <span class="font-semibold text-gray-900 dark:text-white">
                     {{ formatCurrency(settings.shop_fee_threshold) }}
                   </span>
@@ -390,7 +413,9 @@ const formatPercent = (value: number) => {
                   Employees
                 </h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ employees?.length || 0 }} employee{{ employees?.length !== 1 ? 's' : '' }}
+                  {{ employees?.length || 0 }} employee{{
+                    employees?.length !== 1 ? "s" : ""
+                  }}
                 </p>
               </div>
             </div>
@@ -398,7 +423,9 @@ const formatPercent = (value: number) => {
 
           <div class="space-y-4">
             <!-- Employee List -->
-            <div v-if="employees && employees.length > 0" class="space-y-2 max-h-96 overflow-y-auto">
+            <div
+              v-if="employees && employees.length > 0"
+              class="space-y-2 max-h-96 overflow-y-auto">
               <div
                 v-for="employee in employees"
                 :key="employee.id"
@@ -407,28 +434,44 @@ const formatPercent = (value: number) => {
                   <div class="space-y-3">
                     <UFormGroup label="Customer" size="sm">
                       <USelectMenu
-                        v-model="selectedCustomerEdit"
-                        :options="customerOptionsEdit"
+                        v-model:searchTerm="customerSearchEdit"
+                        :items="
+                          customerResultsEdit?.customers.map((c) => ({
+                            id: c.id,
+                            label: `${c.first_name} ${c.last_name}`,
+                            value: c.id,
+                          })) || []
+                        "
                         searchable
                         placeholder="Search customer..."
-                        size="sm"
-                        @update:model-value="(val) => editEmployeeForm.customer_id = val?.id"
-                        @update:query="(val) => { customerSearchEdit = val; debouncedSearchCustomersEdit(); }" />
+                        size="sm" />
                     </UFormGroup>
                     <UFormGroup label="Position" size="sm">
                       <UInput v-model="editEmployeeForm.position" size="sm" />
                     </UFormGroup>
                     <UFormGroup label="Hire Date" size="sm">
-                      <UInput v-model="editEmployeeForm.hire_date" type="date" size="sm" />
+                      <UInput
+                        v-model="editEmployeeForm.hire_date"
+                        type="date"
+                        size="sm" />
                     </UFormGroup>
                     <UFormGroup label="Termination Date" size="sm">
-                      <UInput v-model="editEmployeeForm.termination_date" type="date" size="sm" />
+                      <UInput
+                        v-model="editEmployeeForm.termination_date"
+                        type="date"
+                        size="sm" />
                     </UFormGroup>
                     <div class="flex gap-2">
-                      <UButton @click="saveEmployee(employee.id)" size="sm" color="primary">
+                      <UButton
+                        @click="saveEmployee(employee.id)"
+                        size="sm"
+                        color="primary">
                         Save
                       </UButton>
-                      <UButton @click="cancelEditEmployee" size="sm" variant="ghost">
+                      <UButton
+                        @click="cancelEditEmployee"
+                        size="sm"
+                        variant="ghost">
                         Cancel
                       </UButton>
                     </div>
@@ -437,9 +480,11 @@ const formatPercent = (value: number) => {
                 <template v-else>
                   <div class="flex items-center justify-between">
                     <div>
-                      <p class="font-medium text-gray-900 dark:text-white">{{ employee.position }}</p>
+                      <p class="font-medium text-gray-900 dark:text-white">{{
+                        employee.position
+                      }}</p>
                       <p class="text-sm text-gray-600 dark:text-gray-400">
-                        Customer ID: {{ employee.customer_id }}
+                        Name: {{ employee.customer_id }}
                       </p>
                       <p class="text-xs text-gray-500 dark:text-gray-500">
                         Hired: {{ employee.hire_date }}
@@ -465,25 +510,50 @@ const formatPercent = (value: number) => {
 
             <!-- Add Employee Form -->
             <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-              <p class="text-sm font-medium text-gray-900 dark:text-white mb-3">Add Employee</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white mb-3"
+                >Add Employee</p
+              >
               <div class="space-y-3">
                 <UFormGroup label="Customer" size="sm">
                   <USelectMenu
-                    v-model="selectedCustomer"
-                    :options="customerOptions"
+                    v-model:searchTerm="customerSearchEdit"
+                    :items="
+                      customerResultsEdit?.customers.map((c) => ({
+                        id: c.id,
+                        label: `${c.first_name} ${c.last_name}`,
+                        value: c.id,
+                      })) || []
+                    "
                     searchable
                     placeholder="Search customer..."
                     size="sm"
-                    @update:model-value="(val) => newEmployee.customer_id = val?.id"
-                    @update:query="(val) => { customerSearch = val; debouncedSearchCustomers(); }" />
+                    @update:model-value="
+                      (val) => (newEmployee.customer_id = val?.id)
+                    "
+                    @update:query="
+                      (val) => {
+                        customerSearch = val;
+                        debouncedSearchCustomers();
+                      }
+                    " />
                 </UFormGroup>
                 <UFormGroup label="Position" size="sm">
-                  <UInput v-model="newEmployee.position" placeholder="Mechanic" size="sm" />
+                  <UInput
+                    v-model="newEmployee.position"
+                    placeholder="Mechanic"
+                    size="sm" />
                 </UFormGroup>
                 <UFormGroup label="Hire Date" size="sm">
-                  <UInput v-model="newEmployee.hire_date" type="date" size="sm" />
+                  <UInput
+                    v-model="newEmployee.hire_date"
+                    type="date"
+                    size="sm" />
                 </UFormGroup>
-                <UButton @click="addEmployee" icon="i-heroicons-plus" block size="sm">
+                <UButton
+                  @click="addEmployee"
+                  icon="i-heroicons-plus"
+                  block
+                  size="sm">
                   Add Employee
                 </UButton>
               </div>
@@ -505,7 +575,9 @@ const formatPercent = (value: number) => {
                   Parts Markup
                 </h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ markupData?.length || 0 }} rule{{ markupData?.length !== 1 ? 's' : '' }}
+                  {{ markupData?.length || 0 }} rule{{
+                    markupData?.length !== 1 ? "s" : ""
+                  }}
                 </p>
               </div>
             </div>
@@ -513,7 +585,9 @@ const formatPercent = (value: number) => {
 
           <div class="space-y-4">
             <!-- Markup List -->
-            <div v-if="markupData && markupData.length > 0" class="space-y-2 max-h-96 overflow-y-auto">
+            <div
+              v-if="markupData && markupData.length > 0"
+              class="space-y-2 max-h-96 overflow-y-auto">
               <div
                 v-for="markup in markupData"
                 :key="markup.id"
@@ -521,16 +595,30 @@ const formatPercent = (value: number) => {
                 <template v-if="editingMarkup === markup.id">
                   <div class="space-y-3">
                     <UFormGroup label="Cost Threshold ($)" size="sm">
-                      <UInput v-model.number="editMarkupForm.value" type="number" step="0.01" size="sm" />
+                      <UInput
+                        v-model.number="editMarkupForm.value"
+                        type="number"
+                        step="0.01"
+                        size="sm" />
                     </UFormGroup>
                     <UFormGroup label="Multiplier" size="sm">
-                      <UInput v-model.number="editMarkupForm.multiplier" type="number" step="0.01" size="sm" />
+                      <UInput
+                        v-model.number="editMarkupForm.multiplier"
+                        type="number"
+                        step="0.01"
+                        size="sm" />
                     </UFormGroup>
                     <div class="flex gap-2">
-                      <UButton @click="saveMarkup(markup.id)" size="sm" color="primary">
+                      <UButton
+                        @click="saveMarkup(markup.id)"
+                        size="sm"
+                        color="primary">
                         Save
                       </UButton>
-                      <UButton @click="cancelEditMarkup" size="sm" variant="ghost">
+                      <UButton
+                        @click="cancelEditMarkup"
+                        size="sm"
+                        variant="ghost">
                         Cancel
                       </UButton>
                     </div>
@@ -566,7 +654,9 @@ const formatPercent = (value: number) => {
 
             <!-- Add Markup Form -->
             <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-              <p class="text-sm font-medium text-gray-900 dark:text-white mb-3">Add Markup Rule</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white mb-3"
+                >Add Markup Rule</p
+              >
               <div class="space-y-3">
                 <UFormGroup label="Cost Threshold ($)" size="sm">
                   <UInput
@@ -584,7 +674,11 @@ const formatPercent = (value: number) => {
                     placeholder="1.5"
                     size="sm" />
                 </UFormGroup>
-                <UButton @click="addMarkup" icon="i-heroicons-plus" block size="sm">
+                <UButton
+                  @click="addMarkup"
+                  icon="i-heroicons-plus"
+                  block
+                  size="sm">
                   Add Rule
                 </UButton>
               </div>

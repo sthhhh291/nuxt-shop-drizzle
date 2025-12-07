@@ -13,10 +13,16 @@ const laborSchema = z.object({
   estimate_id: z.number().int(),
 });
 
+const { data } = await useFetch(() => `/api/admin`);
+console.log("labor_rate:", data.value);
+
+const labor_rate =
+  data.value && Array.isArray(data.value) && data.value[0]?.labor_rate;
+
 const formState = reactive({
   description: "",
   hours: 0,
-  rate: 125,
+  rate: labor_rate,
   price: 0,
 });
 
