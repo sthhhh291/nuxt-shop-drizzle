@@ -1,12 +1,13 @@
 import { db } from "../sqlite-service";
 import { customers } from "../../db/schema";
 import { z } from "zod";
+import { customerSchema } from "~/lib/validations";
 
-const customerSchema = z.object({
-  first_name: z.string().min(1).max(50),
-  last_name: z.string().min(1).max(50),
-  notes: z.string().max(255).optional(),
-});
+// const customerSchema = z.object({
+//   first_name: z.string().min(1).max(50),
+//   last_name: z.string().min(1).max(50),
+//   notes: z.string().max(255).optional(),
+// });
 
 export default defineEventHandler(async (event) => {
   if (event.req.method === "POST") {

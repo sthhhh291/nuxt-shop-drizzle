@@ -1,16 +1,6 @@
 import { db } from "../sqlite-service";
 import { estimates } from "~~/db/schema";
-import { z } from "zod";
-
-const estimateSchema = z.object({
-  date: z.string().min(10).max(10),
-  hours_taken: z.number().min(0),
-  miles: z.number().min(0),
-  estimate_type: z.enum(["initial", "estimate", "repair_order"]),
-  private_notes: z.string().max(500).optional(),
-  public_notes: z.string().max(500).optional(),
-  car_id: z.number().int().positive(),
-});
+import { estimateSchema } from "~/lib/validations";
 
 export default eventHandler(async (event) => {
   try {
@@ -28,7 +18,6 @@ export default eventHandler(async (event) => {
       ...validatedBody,
       private_notes: validatedBody.private_notes ?? "",
       public_notes: validatedBody.public_notes ?? "",
-      // car_id: Number(validatedBody.car_id), // convert car_id to number
     };
 
     const insertedEstimate = await db

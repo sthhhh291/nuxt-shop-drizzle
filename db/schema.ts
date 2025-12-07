@@ -4,6 +4,7 @@ import {
   text,
   real,
   sqliteView,
+  SQLiteTable,
 } from "drizzle-orm/sqlite-core";
 import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 import { relations, sql } from "drizzle-orm";
@@ -150,6 +151,26 @@ export const oil = sqliteTable("oil", {
 
 export type Oil = InferSelectModel<typeof oil>;
 export type InsertOil = InferInsertModel<typeof oil>;
+
+export const adminPanel = sqliteTable("admin", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  tax: real("tax").notNull(),
+  shop_fee_threshold: real("shop_fee_threshold").notNull(),
+  shop_fee_rate: real("shop_fee_rate").notNull(),
+  labor_rate: real("labor_rate").notNull(),
+});
+
+export type AdminPanel = InferSelectModel<typeof adminPanel>;
+export type InsertAdminPanel = InferInsertModel<typeof adminPanel>;
+
+export const markupMatrix = sqliteTable("markup_matrix", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  value: real("value").notNull(),
+  multiplier:real("multiplier").notNull(),
+});
+
+export type MarkupMatrix = InferSelectModel<typeof markupMatrix>;
+export type InsertMarkupMatrix = InferInsertModel<typeof markupMatrix>;
 
 //estimate totals view. used for reports and repair orders
 export const estimate_totals = sqliteView("estimate_totals", {

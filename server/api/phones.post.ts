@@ -1,17 +1,11 @@
 import { db } from "../sqlite-service";
 import { phones } from "../../db/schema";
-import { z } from "zod";
-
-const phoneSchema = z.object({
-  phone_number: z.string().min(10).max(15),
-  phone_type: z.enum(["Mobile", "Home", "Work"]),
-  customer_id: z.number().int(),
-});
+import { phoneSchemaWithCustomer } from "../../app/lib/validations";
 
 export default defineEventHandler(async (event) => {
   if (event.req.method === "POST") {
     const body = await readBody(event);
-    const parsedBody = phoneSchema.safeParse(body);
+    const parsedBody = phoneSchemaWithCustomer.safeParse(body);
 
     if (!parsedBody.success) {
       event.res.statusCode = 400;

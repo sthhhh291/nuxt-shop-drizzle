@@ -65,6 +65,11 @@ const navigationItems = [
     icon: "i-heroicons-bolt",
     to: "/estimates/calculate",
   },
+  {
+    label: "Admin",
+    icon: "i-heroicons-circle-stack",
+    to: "/admin",
+  }
 ];
 
 // Minimal logging only for authentication changes (not on every render)
