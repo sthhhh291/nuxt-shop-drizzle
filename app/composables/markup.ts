@@ -1,43 +1,42 @@
-// Markup matrix with smooth interpolation between ranges
-export const markupMatrix = [
-  { costLimit: 5, markup: 3 },
-  { costLimit: 10, markup: 2.75 },
-  { costLimit: 25, markup: 2 },
-  { costLimit: 100, markup: 1.86 },
-  { costLimit: 200, markup: 1.52 },
-  { costLimit: 250, markup: 1.43 },
-  { costLimit: 500, markup: 1.34 },
-  { costLimit: 1000, markup: 1.26 },
-  { costLimit: Infinity, markup: 1.21 },
-];
+import type { MarkupMatrix } from "~~/db/schema";
+
+// Composable to fetch markup matrix
+export const useMarkupMatrix = () => {
+  return useFetch<MarkupMatrix[]>('/api/markup');
+};
 
 // Calculate markup with linear interpolation for smooth transitions
-export const calculateMarkup = (unitCost: number): number => {
-  if (unitCost <= 0) return markupMatrix[0].markup;
+export const calculateMarkup = (unitCost: number, matrix: MarkupMatrix[]): number => {
+  if (!matrix || matrix.length === 0) return 1;
+  if (unitCost <= 0) return matrix[0]?.multiplier ?? 1;
 
-  // Find the range we're in
-  for (let i = 0; i < markupMatrix.length - 1; i++) {
-    const current = markupMatrix[i];
-    const next = markupMatrix[i + 1];
+  // Sort matrix by value to ensure correct ordering
+  const sorted = [...matrix].sort((a, b) => a.value - b.value);
+  
+  // Find the appropriate range for interpolation
+  for (let i = 0; i < sorted.length; i++) {
+    const current = sorted[i];
     
-    if (unitCost < current.costLimit) {
-      // We're in this range - interpolate if not the first range
-      if (i === 0) {
-        return current.markup;
-      }
+    // If cost is less than the first threshold, use first multiplier
+    if (i === 0 && unitCost < current.value) {
+      return current.multiplier;
+    }
+    
+    // If cost falls within this range, interpolate
+    if (unitCost < current.value) {
+      const prev = sorted[i - 1];
       
-      const prev = markupMatrix[i - 1];
-      const rangeStart = prev.costLimit;
-      const rangeEnd = current.costLimit;
-      const markupStart = prev.markup;
-      const markupEnd = current.markup;
+      // Linear interpolation between prev and current
+      const rangeStart = prev.value;
+      const rangeEnd = current.value;
+      const markupStart = prev.multiplier;
+      const markupEnd = current.multiplier;
       
-      // Linear interpolation
       const position = (unitCost - rangeStart) / (rangeEnd - rangeStart);
       return markupStart + (markupEnd - markupStart) * position;
     }
   }
   
-  // If we're beyond the last finite limit, use the final markup
-  return markupMatrix[markupMatrix.length - 1].markup;
+  // If cost is beyond all thresholds, use the last multiplier
+  return sorted[sorted.length - 1]?.multiplier ?? 1;
 };

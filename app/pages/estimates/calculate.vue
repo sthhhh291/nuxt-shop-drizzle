@@ -89,6 +89,11 @@ const removePart = (index: number) => {
   parts.value.splice(index, 1);
 };
 
+const matrix = useFetch("/api/markup", {
+  method: "GET",
+  server: false,
+});
+
 // implementing markup matrix
 // const markupMatrix = [
 //   { costLimit: 5, markup: 3} ,
@@ -106,7 +111,7 @@ const calculatePartPrice = (part: Part) => {
   const quantity = Number(part.quantity) || 0;
   const unitPrice = Number(part.unit_price) || 0;
   const unitCost = Number(part.unit_cost) || 0;
-  const markup = calculateMarkup(unitCost);
+  const markup = calculateMarkup(unitCost, matrix.data.value ?? []);
   let estPrice = unitCost * markup;
   estPrice < unitPrice || unitPrice === 0
     ? estPrice = estPrice

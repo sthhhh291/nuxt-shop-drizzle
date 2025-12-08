@@ -28,12 +28,13 @@ const formState = reactive({
 
 const isSubmitting = ref(false);
 
+const markup = useFetch("/api/markup", {
+  method: "GET",
+  server: false,
+});
+
 const calcPrice = () => {
-  const markup = formState.cost * 1.86;
-  formState.unit_price =
-    markup > formState.list && formState.list > 0 ?
-      formState.list
-    : parseFloat(markup.toFixed(2));
+  formState.unit_price = formState.cost * calculateMarkup(formState.cost, markup.data.value ?? []);
 };
 
 // Watch for changes in cost, list, or quantity to automatically calculate price
@@ -67,7 +68,7 @@ const submitPart = async (event: any) => {
     toast.add({
       title: "Success!",
       description: "Part added to estimate",
-      color: "green",
+      color: "primary",
     });
 
     router.push(`/estimates/${id}`);
@@ -77,7 +78,7 @@ const submitPart = async (event: any) => {
       title: "Error",
       description:
         error instanceof Error ? error.message : "Failed to add part",
-      color: "red",
+      color: "warning",
     });
   } finally {
     isSubmitting.value = false;
