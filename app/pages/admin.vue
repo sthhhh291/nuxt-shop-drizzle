@@ -484,7 +484,7 @@ const formatPercent = (value: number) => {
                         employee.position
                       }}</p>
                       <p class="text-sm text-gray-600 dark:text-gray-400">
-                        Name: {{ employee.customer_id }}
+                        Name: {{ employee.first_name }} {{ employee.last_name }}
                       </p>
                       <p class="text-xs text-gray-500 dark:text-gray-500">
                         Hired: {{ employee.hire_date }}
