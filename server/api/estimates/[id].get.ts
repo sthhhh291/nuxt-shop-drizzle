@@ -1,5 +1,5 @@
 import { db } from "~~/server/sqlite-service";
-import { estimates, labor, parts, oil } from "~~/db/schema";
+import { estimates, labor, parts, oil,adminPanel } from "~~/db/schema";
 import { z } from "zod";
 import { eq, sql } from "drizzle-orm";
 
@@ -45,21 +45,21 @@ export default eventHandler(async (event) => {
         parts: sql<number>`coalesce(parts_sum.parts, 0)`,
         oil: sql<number>`coalesce(oil_sum.oil, 0)`,
         subtotal: sql<number>`coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)`,
-        tax: sql<number>`round(0.0875 * (coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2)`,
+        tax: sql<number>`round(tax * (coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2)`,
         shop_fees: sql<number>`
           case 
             when (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)) > 500 
-            then 15 
-            else round(0.03 * (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2) 
+            then shop_fee_threshold
+            else round(shop_fee_rate * (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2) 
           end
         `,
         total: sql<number>`
           coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0) + 
-          round(0.0875 * (coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2) +
+          round(tax * (coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2) +
           case 
             when (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)) > 500 
-            then 15 
-            else round(0.03 * (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2) 
+            then shop_fee_threshold
+            else round(shop_fee_rate * (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2) 
           end
         `,
         cost: sql<number>`coalesce(parts_sum.p_cost, 0) + coalesce(oil_sum.o_cost, 0)`,
@@ -67,8 +67,8 @@ export default eventHandler(async (event) => {
           coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0) + 
           case 
             when (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)) > 500 
-            then 15 
-            else round(0.03 * (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2) 
+            then shop_fee_threshold
+            else round(shop_fee_rate * (coalesce(labor_sum.labor, 0) + coalesce(parts_sum.parts, 0) + coalesce(oil_sum.oil, 0)), 2) 
           end
           - coalesce(parts_sum.p_cost, 0) - coalesce(oil_sum.o_cost, 0)
         `,
@@ -83,7 +83,7 @@ export default eventHandler(async (event) => {
       .crossJoin(
         sql`(select coalesce(sum(price_per_unit * quantity), 0) as oil, coalesce(sum(cost * quantity), 0) as o_cost from ${oil} where estimate_id = ${id}) as oil_sum`
       )
-      // .crossJoin(tax) // add tax table later
+      .crossJoin(adminPanel)
       .get();
 
     return { estimate, totals: totalsResult };

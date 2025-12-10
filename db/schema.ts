@@ -191,19 +191,19 @@ export const estimate_totals = sqliteView("estimate_totals", {
     coalesce(p.parts,0) as parts, 
     coalesce(o.oil,0) as oil,
     coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) as subtotal,
-    round(0.081*(coalesce(p.parts,0)+coalesce(o.oil,0)),2) as tax,
-    CASE WHEN coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) >500 THEN 15
-    ELSE round(0.03*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2) END as shop_fees,
+    round(tax*(coalesce(p.parts,0)+coalesce(o.oil,0)),2) as tax,
+    CASE WHEN coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) >500 THEN shop_fee_threshold
+    ELSE round(shop_fee_rate*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2) END as shop_fees,
     coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)+
-    round(0.081*(coalesce(p.parts,0)+coalesce(o.oil,0)),2)+
-    CASE WHEN coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) >500 THEN 15
-    ELSE round(0.03*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2) END as total,
+    round(tax*(coalesce(p.parts,0)+coalesce(o.oil,0)),2)+
+    CASE WHEN coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) >500 THEN shop_fee_threshold
+    ELSE round(shop_fee_rate*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2) END as total,
     coalesce(p.p_cost,0) + coalesce(o.o_cost,0) as cost,
     coalesce(p.parts,0) - coalesce(p.p_cost,0) as parts_margin,
     coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)+
-    round(0.081*(coalesce(p.parts,0)+coalesce(o.oil,0)),2)+
-    CASE WHEN coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) >500 THEN 15
-    ELSE round(0.03*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2) END -
+    round(tax*(coalesce(p.parts,0)+coalesce(o.oil,0)),2)+
+    CASE WHEN coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0) >500 THEN shop_fee_threshold
+    ELSE round(shop_fee_rate*(coalesce(l.labor,0)+coalesce(p.parts,0)+coalesce(o.oil,0)),2) END -
     coalesce(p.p_cost,0) + coalesce(o.o_cost,0) as margin 
 from estimates r
 left join (
@@ -222,7 +222,8 @@ left join (
     coalesce(sum(cost*quantity),0) as o_cost
             from oil 
         group by estimate_id) o 
-on o.estimate_id=r.id;
+on o.estimate_id=r.id
+join admin;
   `);
 
 //relations area
